@@ -275,15 +275,15 @@ void OnMultLine_P2(int m_ar, int m_br)
 
     Time1 = omp_get_wtime();
 
-	#pragma omp parallel 
-	for(i=0; i<m_ar; i++)
-		cout << i;
-		for( k=0; k<m_br; k++)
+	#pragma omp parallel private(i, j, k)
+	for(i=0; i<m_ar; i++){ 
+		for( k=0; k<m_br; k++){
 			#pragma omp for
 		    for(j=0; j<m_br; j++)
 			    phc[i*m_ar+j] += pha[i*m_ar+k] * phb[k*m_br+j];
+		}
+	}
 
-	
     Time2 = omp_get_wtime();
 
 	sprintf(st, "Time: %3.3f seconds\n", (double)(Time2 - Time1));
