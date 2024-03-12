@@ -141,7 +141,7 @@ O computador em questão tem o sistema operativo Windows 10 Home 22H2, tem um CP
   <img src="graph4.png" /> 
 </p>
 
-<p style="font-size:15px;"></p>
+<p style="font-size:15px;">Através da análise dos dados recolhidos, concluimos que o tamanho do bloco não influenciou significativamente o desempenho deste nível de cache, pois é o principal e também o mais rápido. Isso pode ser devido ao fato de que, em um bloco de 256x256, que aloca um tipo double em cada célula de 8 bytes, ocupa 256KB na memória, o que, para o i5 7300, equivale a toda a cache L1, assim como parte de L2. No entanto, para os tamanhos de bloco maiores, 256 e 512, mostra ser mais eficiente em termos de misses de cache L2, já que ainda há memória não ocupada na cache L2 para o bloco de 128. O mesmo se conclui para o de 512.</p>
 
 
 
@@ -153,11 +153,20 @@ O computador em questão tem o sistema operativo Windows 10 Home 22H2, tem um CP
   <img src="graph7.png" />
 </p>
 
-<p style="font-size:15px;">Generalizando os dados, o Paralelo 1 tem menor tempo de execução que o Paralelo 2, embora ambos sejam mais eficientes que a multiplicação Linha sequencial. Isto deve-se ao facto de o Paralelo 1 utilizar único comando OpenMP para paralelizar o for externo, o que pode resultar em uma melhor utilização dos recursos do processador e uma redução no overhead de paralelização. Por outro lado, o Paralelo 2 paraleliza tanto o for externo quanto o for interno, o que pode introduzir mais overhead de sincronização entre threads e reduzir a eficiência.
-Além disso, o Paralelo 1 parece ter ligeiramente mais caches misses no L1 e não há uma diferença significativa no L2. Isto deve-se a motivos.</p>
+<p style="font-size:15px;">Analisando os dados, o Paralelo 1 tem menor tempo de execução que o Paralelo 2, embora ambos sejam mais eficientes que a multiplicação Linha sequencial. Isto deve-se ao facto de o Paralelo 1 utilizar único comando OpenMP para paralelizar o for externo, o que pode resultar em uma melhor utilização dos recursos do processador e uma redução no overhead de paralelização. Por outro lado, o Paralelo 2 paraleliza tanto o for externo quanto o for interno, o que pode introduzir mais overhead de sincronização entre threads e reduzir a eficiência.
+Além disso, o Paralelo 1 parece ter ligeiramente mais caches misses no L1 e não há uma diferença significativa no L2.</p>
 <p style="font-size:26px;"><b>4.4 MFLOPS, SpeedUp e Eficiência</b></p>
 
 
+<p float="left">
+  <img src="graph8.png" />
+  <img src="graph9.png" /> 
+  <img src="graph10.png" />
+</p>
+
+<p style="font-size:15px;">Em termos de MFLOPS,.Em termos de SpeedUp, podemos reparar que inicialmente o paralelo1 é melhor que o paralelo2, mas quanto maior for o tamanho do dado, começa a acontecer o oposto. Isto deve-se provavelmente ao fato de que o paralelo2 distribui o trabalho de uma maneira que é mais eficiente para conjuntos de dados maiores. No paralelo1, o trabalho é distribuído no for mais externo, o que significa que cada thread é responsável por uma linha inteira da matriz. Isso pode levar a um desequilíbrio de carga se algumas linhas demorarem mais para serem processadas do que outras. No paralelo2, o trabalho é distribuído no for mais interno, o que significa que cada thread é responsável por uma única operação de multiplicação e adição. Isto também vai influenciar a eficiência, dado que a eficiência é calculada através de "speedup/cores". </p>
+
 <p style="font-size:30px;"><b>5. Conclusões</b></p>
 
-<p style="font-size:15px;"></p>
+<p style="font-size:15px;">Em conclusão, conseguimos perceber que os conceitos e teorias, que foram ensinadas nas aulas teóricas, podiam ser aplicados neste trabalho e os seus efeitos nos resultados observados, tanto para os programas sequenciais, como para os paralelos. Também foi interessante aplicar as técnicas necessárias para melhorar os desempenhos dos programas.</p>
+
