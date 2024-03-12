@@ -1,0 +1,163 @@
+<p align="center"><b>Faculdade De Engenharia Da Universidade Do Porto</b></p>
+<p align="center">
+  <img src="Feuporto.png" alt="Alternate Text">
+</p>
+<p align="center" style="font-size:20px;"><b>Projeto de CPD 1</b></p>
+<br><br>
+<p style="font-size:25px;"><b>Índice</b></p>
+<ol>
+    <li style="font-size:22px;">Descrição do problema</li>
+    <li style="font-size:22px;">Explicação dos algoritmos</li>
+	    <ul>
+            <li style="font-size:15px;">Multiplicação de matrizes Simples</li>
+            <li style="font-size:15px;">Multiplicação de matrizes de Linha</li>
+            <li style="font-size:15px;">Multiplicação de matrizes de Bloco</li>
+			<li style="font-size:15px;">Multiplicação paralela 1</li>
+			<li style="font-size:15px;">Multiplicação paralela 2</li>
+        </ul>
+    <li style="font-size:22px;">Medidas de Perfomance</li>
+    <li style="font-size:22px;">Resultados e Análises</li>
+    <li style="font-size:22px;">Conclusões</li>
+</ol>
+
+<p style="font-size:30px;"><b>1. Descrição do problema</b></p>
+
+<p style="font-size:15px;">Neste problema, o nosso objetivo é estudar o efeito da hierarquia de memória no desempenho do processador quando acedemos a grandes quantidades de dados. Para este estudo, vamos usar o produto de 2 matrizes.</p>
+
+<p style="font-size:30px;"><b>2. Explicação dos algoritmos</b></p>
+
+<p style="font-size:15px;">Para este problema, vamos usar 5 algoritmos diferentes para multiplicar as matrizes. Esses algoritmos são:</p>
+<ol>
+    <li style="font-size:15px;">Multiplicação de matrizes Simples</li>
+    <li style="font-size:15px;">Multiplicação de matrizes de Linha</li>
+    <li style="font-size:15px;">Multiplicação de matrizes de Bloco</li>
+	<li style="font-size:15px;">Multiplicação paralela 1</li>
+	<li style="font-size:15px;">Multiplicação paralela 2</li>
+</ol>
+
+<p style="font-size:26px;"><b>2.1 Multiplicação de matrizes Simples</b></p>
+
+<p style="font-size:15px;">Este algoritmo é o mais simples dos 3. Neste algoritmo, que nos foi dado, consiste num algoritmo C++ que multiplica a linha da primeira matriz com cada coluna da segunda matriz. A complexidade temporal do algoritmo é O(n^3). Aqui em baixo, podes encontrar o pedaço do código relevante do algoritmo:</p>
+
+
+```c++
+	for(i=0; i<m_ar; i++)
+	{	for( j=0; j<m_br; j++)
+		{	temp = 0;
+			for( k=0; k<m_ar; k++)
+			{	
+				temp += pha[i*m_ar+k] * phb[k*m_br+j];
+			}
+			phc[i*m_ar+j]=temp;
+		}
+	}
+```
+
+<p style="font-size:15px;">Também existe uma versão python deste algoritmo.</p>
+
+<p style="font-size:26px;"><b>2.2 Multiplicação de matrizes de Linha</b></p>
+
+<p style="font-size:15px;">Este algoritmo é uma melhoria do algoritmo anterior. Neste algoritmo, em vez de multiplicar a linha da primeira matriz com cada coluna da segunda matriz, multiplicamos um elemento da primeira matriz pela linha correspondente da segunda matriz.No entanto, a complexidade mantém-se. Aqui em baixo, podes encontrar o pedaço do código relevante do algoritmo:</p>
+
+```c++
+	for( i=0; i<m_ar; i++)
+		for( k=0; k<m_br; k++)
+		    for(j=0; j<m_br; j++)
+			    phc[i*m_ar+j] += pha[i*m_ar+k] * phb[k*m_br+j];
+```
+
+<p style="font-size:15px;">Também existe uma versão python deste algoritmo.</p>
+
+<p style="font-size:26px;"><b>2.3 Multiplicação de matrizes de Bloco</b></p>
+
+<p style="font-size:15px;">Neste algoritmo, em vez de multiplicar um elemento da primeira matriz pela linha correspondente da segunda matriz, nós dividimos as matrizes em blocos e realizamos a multiplicação de matrizes em cada bloco, que no final serão juntadas. Isto pode passar a ser mais eficiente se as matrizes forem relativamente grandes. No entanto, a complexidade temporal do algoritmo ainda é O(n^3). Podes encontrar o pedaço do código relevante do algoritmo:</p>
+
+```c++
+ for (i_blk = 0; i_blk < m_ar; i_blk += bkSize) {
+        for (j_blk = 0; j_blk < m_br; j_blk += bkSize) {
+            for (k_blk = 0; k_blk < m_ar; k_blk += bkSize) {
+                for (i = i_blk; i < min(i_blk + bkSize, m_ar); i++) {
+                    for( k=k_blk; k<min(k_blk + bkSize, m_ar); k++) {
+                        for (j = j_blk; j < min(j_blk + bkSize, m_br); j++) {
+                            phc[i*m_ar+j] += pha[i*m_ar+k] * phb[k*m_br+j];
+                        }
+                    }
+                }
+            }
+        }
+    }
+```
+
+<p style="font-size:26px;"><b>2.4 Multiplicação paralela 1</b></p>
+
+<p style="font-size:15px;">Este algoritmo é uma versão paralela do algoritmo de multiplicação de matrizes de linha. Utilizamos a biblioteca OpenMP para paralelizar o "for" mais externo. Cada iteração do "for" mais externo é independente das outras, o que significa que podem ser executadas em paralelo sem causar condições de corrida. A execução será mais rápida num sistema com múltiplos núcleos de processamento. Aqui em baixo, podes encontrar o pedaço do código relevante do algoritmo:</p>
+
+```c++
+#pragma omp parallel for 
+for(i=0; i<m_ar; i++)
+    for( k=0; k<m_br; k++)
+        for(j=0; j<m_br; j++)
+            phc[i*m_ar+j] += pha[i*m_ar+k] * phb[k*m_br+j]; 
+```
+
+<p style="font-size:26px;"><b>2.5 Multiplicação paralela 2</b></p>
+
+<p style="font-size:15px;">Este segundo algoritmo é uma variação do primeiro algoritmo de multiplicação de matrizes paralelas. A principal diferença está na localização da diretiva #pragma omp for, sendo que no segundo algoritmo, o #pragma omp parallel é colocado antes do "for" mais externo, mas  #pragma omp for é colocada antes do "for" mais interno. Isso significa que todas as threads participam na execução de cada iteração do "for" mais externo, mas as iterações do "for" mais interno são distribuídas entre as threads. Cada thread executa uma parte do "for" mais interno para cada iteração do "for" mais externo. Também é importante referir que como as variaveis i,j,k foram definidas fora do for, logo houve necessidade de acrescentar os privates.</p>
+
+```c++
+	#pragma omp parallel private(i, j, k)
+	for(i=0; i<m_ar; i++){ 
+		for( k=0; k<m_br; k++){
+			#pragma omp for
+		    for(j=0; j<m_br; j++)
+			    phc[i*m_ar+j] += pha[i*m_ar+k] * phb[k*m_br+j];
+		}
+    }
+```
+
+<p style="font-size:30px;"><b>3. Medidas de Perfomance</b></p>
+
+<p style="font-size:15px;">Tal como indicado na descrição do projeto, utilizamos uma livraria / API "PAPI", que dá acesso a várias medidas relacionadas com o CPU, como por exemplo a memória usada do Cpu e os caches hits/misses. Para garantir a validade e veracidade dos dados obtidos, são partilhados aqui os "specs" do computador em teste, bem como o facto de ter feito 3 testes para cada dado (apenas validável aos dados que não ultrapassem 40s de execução). 
+O computador em questão tem o sistema operativo Windows 10 Home 22H2, tem um CPU Intel i5-7300HQ 2.50Gz com 4 cores, com 8GB de RAM disponíveis (2400MHz). A cache L1 tem 256KB,L2 tem 1.0MB e L3 tem 6.0MB. Para cada teste com algoritmo diferente, foi iniciado outro programa e fechado o anterior, para permitir uma alocação independente de memória entre cada algoritmo. Tal como foi indicado nas aulas práticas, foi recomendado usar a flag -O2 para aumentar a perfomance do código compilado, aumentando assim um pouco o tempo de compilação. Os dados diretos registados do programa foram tempo de execução (em segundos), Data Cache Misses do L1 e L2. Os dados a ser calculados à mão serão MFLOPS (Million Floating Point Operations Per Second), SpeedUp e Eficiência.</p>
+
+<p style="font-size:30px;"><b>4. Resultados e Análises</b></p>
+
+<p style="font-size:15px;">Nesta secção vamos apresentar as tabelas de dados relevantes à análise e explicação dos algoritmos usados neste projeto.</p>
+
+<p style="font-size:26px;"><b>4.1 Comparação entre Algoritmo de multiplicação Normal e Linha</b></p>
+
+<p float="left">
+  <img src="graph1.png" />
+  <img src="graph2.png" /> 
+</p>
+
+<p style="font-size:15px;">Com base nos dados coletados, podemos tirar várias conclusões importantes. Primeiro, é evidente que a implementação em C++ é significativamente mais rápida do que a implementação em Python para ambos os algoritmos de multiplicação de matrizes. Isso é esperado, pois C++ é uma linguagem compilada que geralmente oferece desempenho superior ao Python, que é uma linguagem interpretada. Segundo, embora não haja diferenças entre os 2 algoritmos em python, em C++ o algoritmo de linha é mais eficiente que o algoritmo normal, devido à maneira como o algoritmo de linha organiza os dados para melhorar a sua acessibilidade,estando disponível mais frequentemente, em comparação com o normal, o que pode resultar em um uso mais eficiente do cache do processador. Isto também reflete nos caches misses.</p>
+
+
+<p style="font-size:26px;"><b>4.2 Comparação entre L1 e L2 cache misses de Block</b></p>
+
+<p float="left">
+  <img src="graph3.png" />
+  <img src="graph4.png" /> 
+</p>
+
+<p style="font-size:15px;"></p>
+
+
+
+<p style="font-size:26px;"><b>4.3 Comparação entre Paralelo 1 e Paralelo 2</b></p>
+
+<p float="left">
+  <img src="graph5.png" />
+  <img src="graph6.png" /> 
+  <img src="graph7.png" />
+</p>
+
+<p style="font-size:15px;">Generalizando os dados, o Paralelo 1 tem menor tempo de execução que o Paralelo 2, embora ambos sejam mais eficientes que a multiplicação Linha sequencial. Isto deve-se ao facto de o Paralelo 1 utilizar único comando OpenMP para paralelizar o for externo, o que pode resultar em uma melhor utilização dos recursos do processador e uma redução no overhead de paralelização. Por outro lado, o Paralelo 2 paraleliza tanto o for externo quanto o for interno, o que pode introduzir mais overhead de sincronização entre threads e reduzir a eficiência.
+Além disso, o Paralelo 1 parece ter ligeiramente mais caches misses no L1 e não há uma diferença significativa no L2. Isto deve-se a motivos.</p>
+<p style="font-size:26px;"><b>4.4 MFLOPS, SpeedUp e Eficiência</b></p>
+
+
+<p style="font-size:30px;"><b>5. Conclusões</b></p>
+
+<p style="font-size:15px;"></p>
