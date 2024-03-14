@@ -109,7 +109,7 @@ for(i=0; i<m_ar; i++) // Percorre as linhas da primeira matriz
 
 <p style="font-size:26px;"><b>2.5 Multiplicação paralela 2</b></p>
 
-<p style="font-size:15px;">Este segundo algoritmo é uma variação do primeiro algoritmo de multiplicação de matrizes paralelas. A principal diferença está na localização da diretiva #pragma omp for, sendo que no segundo algoritmo, o #pragma omp parallel é colocado antes do "for" mais externo, mas  #pragma omp for é colocada antes do "for" mais interno. Isso significa que todas as threads participam na execução de cada iteração do "for" mais externo, mas as iterações do "for" mais interno são distribuídas entre as threads. Cada thread executa uma parte do "for" mais interno para cada iteração do "for" mais externo. Também é importante referir que como as variaveis i,j,k foram definidas fora do for, logo houve necessidade de acrescentar os privates.</p>
+<p style="font-size:15px;">Este segundo algoritmo é uma variação do primeiro algoritmo de multiplicação de matrizes paralelas. A principal diferença está na localização da diretiva #pragma omp for, sendo que no segundo algoritmo, o #pragma omp parallel é colocado antes do "for" mais externo, mas  #pragma omp for é colocada antes do "for" mais interno. Isso significa que todas as threads participam na execução de cada iteração do "for" mais externo, mas as iterações do "for" mais interno são distribuídas entre as threads. Cada thread executa uma parte do "for" mais interno para cada iteração do "for" mais externo. Também é importante referir que como as variaveis i,j,k pois tanto o j como o i e o k são usados em threads diferentes e quando o for adicionar e paralelizando dois for desta vez e sabendo que as variaveis se não tivesem o elemento private iriam ser alteradas por outras threads tendo estas variaveis private os addreses são destas variaveis são diferentes de threads para threads ,isto porque as variaveis foram definidas fora do for, logo houve necessidade de acrescentar os privates.</p>
 
 ```c++
     #pragma omp parallel private(i, j, k) // Inicia um processo paralelo e torna i,j,k privados para cada thread
@@ -127,6 +127,25 @@ for(i=0; i<m_ar; i++) // Percorre as linhas da primeira matriz
 <p style="font-size:15px;">Tal como indicado na descrição do projeto, utilizamos uma livraria / API "PAPI", que dá acesso a várias medidas relacionadas com o CPU, como por exemplo a memória usada do Cpu e os caches hits/misses. Para garantir a validade e veracidade dos dados obtidos, são partilhados aqui os "specs" do computador em teste, bem como o facto de ter feito 3 testes para cada dado (apenas validável aos dados que não ultrapassem 40s de execução). 
 O computador em questão tem o sistema operativo Windows 10 Home 22H2, tem um CPU Intel i5-7300HQ 2.50Gz com 4 cores, com 8GB de RAM disponíveis (2400MHz). A cache L1 tem 256KB,L2 tem 1.0MB e L3 tem 6.0MB. Para cada teste com algoritmo diferente, foi iniciado outro programa e fechado o anterior, para permitir uma alocação independente de memória entre cada algoritmo. Tal como foi indicado nas aulas práticas, foi recomendado usar a flag -O2 para aumentar a perfomance do código compilado, aumentando assim um pouco o tempo de compilação. Os dados diretos registados do programa foram tempo de execução (em segundos), Data Cache Misses do L1 e L2. Os dados a ser calculados à mão serão MFLOPS (Million Floating Point Operations Per Second), SpeedUp e Eficiência.</p>
 
+<p style="font-size:30px;"><b>3.1 Medidas usadas para aumentar o performance em python</b></p>
+
+<p style="font-size:15px;">Em python a tradução do codigo de c para python não basta comparando os resultados da multiplicação de linha para a multiplicação normal a multiplicação de linha ficava pior então nos usavamos variaveis para defenir arrays ou valores que seriam usados multiplas vezes de forma o obrigar o python a dar cache dos valores por exemplo:</p>
+
+```python
+def LineByLineMult(matrixA,matrixB,ma,mb):
+    matrixc = [[0.0 for _ in range(ma)] for _ in range(ma)]
+    for i in range(ma):
+        for k in range(ma):
+            aiK = matrixA[i][k] #cache
+            matrixBk = matrixB[k]
+            columnCache = matrixc[i]
+            for j in range(mb):
+                columnCache[j]  +=  aiK* matrixBk[j]
+            matrixc[i] = columnCache
+    for i in range(10):
+        print(matrixc[0][i], end=" ")
+    print()
+```
 <p style="font-size:30px;"><b>4. Resultados e Análises</b></p>
 
 <p style="font-size:15px;">Nesta secção vamos apresentar as tabelas de dados relevantes à análise e explicação dos algoritmos usados neste projeto.</p>
