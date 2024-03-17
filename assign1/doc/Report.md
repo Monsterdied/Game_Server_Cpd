@@ -38,25 +38,6 @@
 <p style="font-size:26px;"><b>2.1 Multiplicação de matrizes Simples</b></p>
 
 <p style="font-size:15px;">Este algoritmo é o mais simples dos 3. Neste algoritmo, que nos foi dado, consiste num algoritmo C++ que multiplica a linha da primeira matriz com cada coluna da segunda matriz. A complexidade temporal do algoritmo é O(n^3). Aqui em baixo, podes encontrar o pedaço do código relevante do algoritmo:</p>
-
-
-```c++
-    for(i=0; i<m_ar; i++) // Percorre as linhas da primeira matriz
-    {	
-        for( j=0; j<m_br; j++) // Percorre as colunas da segunda matriz
-        {	
-            temp = 0; // Variável temporária para guardar o resultado da multiplicação
-            for( k=0; k<m_ar; k++) // Percorre os elementos na linha atual da primeira matriz e na coluna atual da segunda matriz
-            {	
-                // Multiplica o elemento atual da primeira matriz pelo elemento atual da segunda matriz e adiciona o resultado a temp
-                temp += pha[i*m_ar+k] * phb[k*m_br+j];
-            }
-            // Armazena o resultado da multiplicação na terceira matriz
-            phc[i*m_ar+j]=temp;
-        }
-    }
-```
-
 <p style="font-size:15px;">Também existe uma versão python deste algoritmo, que está implementada no ficheiro matrix_mult.py.</p>
 
 <p style="font-size:26px;"><b>2.2 Multiplicação de matrizes de Linha</b></p>
@@ -86,12 +67,6 @@
                         for (j = j_blk; j < min(j_blk + bkSize, m_br); j++) { // Percorre as colunas dentro do bloco atual da segunda matriz
                             // Multiplica o elemento atual da primeira matriz pelo elemento atual da segunda matriz e adiciona o resultado à posição correspondente na terceira matriz
                             phc[i*m_ar+j] += pha[i*m_ar+k] * phb[k*m_br+j];
-                        }
-                    }
-                }
-            }
-        }
-    }
 ```
 
 <p style="font-size:26px;"><b>2.4 Multiplicação paralela 1</b></p>
@@ -102,14 +77,13 @@
 #pragma omp parallel for // A diretiva OpenMP para paralelizar o loop seguinte
 for(i=0; i<m_ar; i++) // Percorre as linhas da primeira matriz
     for( k=0; k<m_br; k++) // Percorre as colunas da segunda matriz
-        for(j=0; j<m_br; j++) // Percorre os elementos na linha atual da primeira matriz e na coluna atual da segunda matriz
-            // Multiplica o elemento atual da primeira matriz pelo elemento atual da segunda matriz e adiciona o resultado à posição correspondente na terceira matriz
+        for(j=0; j<m_br; j++) // Percorre os elementos na linha atual da 
             phc[i*m_ar+j] += pha[i*m_ar+k] * phb[k*m_br+j]; 
 ```
 
 <p style="font-size:26px;"><b>2.5 Multiplicação paralela 2</b></p>
 
-<p style="font-size:15px;">Este segundo algoritmo é uma variação do primeiro algoritmo de multiplicação de matrizes paralelas. A principal diferença está na localização da diretiva #pragma omp for, sendo que no segundo algoritmo, o #pragma omp parallel é colocado antes do "for" mais externo, mas  #pragma omp for é colocada antes do "for" mais interno. Isso significa que todas as threads participam na execução de cada iteração do "for" mais externo, mas as iterações do "for" mais interno são distribuídas entre as threads. Cada thread executa uma parte do "for" mais interno para cada iteração do "for" mais externo. Também é importante referir que como as variaveis i,j,k pois tanto o j como o i e o k são usados em threads diferentes e quando o for adicionar e paralelizando dois for desta vez e sabendo que as variaveis se não tivesem o elemento private iriam ser alteradas por outras threads tendo estas variaveis private os addreses são destas variaveis são diferentes de threads para threads ,isto porque as variaveis foram definidas fora do for, logo houve necessidade de acrescentar os privates.</p>
+<p style="font-size:15px;">Este segundo algoritmo é uma variação do primeiro algoritmo de multiplicação de matrizes paralelas. A principal diferença está na localização da diretiva #pragma omp for, sendo que no segundo algoritmo, o #pragma omp parallel é colocado antes do "for" mais externo, mas  #pragma omp for é colocada antes do "for" mais interno. Isso significa que todas as threads participam na execução de cada iteração do "for" mais externo, mas as iterações do "for" mais interno são distribuídas entre as threads. Cada thread executa uma parte do "for" mais interno para cada iteração do "for" mais externo. Também é importante referir que como as variaveis i,j,k são usados em threads diferentes e são defenidas fora do for paralelizado o address das variaveis vai ser igual sabendo que se estam a iterar os valores i j k não queremos que as threads partilhem estes valores, adicionando o private os address destas variaveis de thread para thread são diferentes.</p>
 
 ```c++
     #pragma omp parallel private(i, j, k) // Inicia um processo paralelo e torna i,j,k privados para cada thread
@@ -118,8 +92,7 @@ for(i=0; i<m_ar; i++) // Percorre as linhas da primeira matriz
             #pragma omp for // Distribuir as iterações do for entre as threads
             for(j=0; j<matrixBRows; j++)
                 productMatrix[i*matrixARows+j] += matrixA[i*matrixARows+k] * matrixB[k*matrixBRows+j];
-        }
-    }
+
 ```
 
 <p style="font-size:30px;"><b>3. Medidas de Perfomance</b></p>
@@ -127,25 +100,9 @@ for(i=0; i<m_ar; i++) // Percorre as linhas da primeira matriz
 <p style="font-size:15px;">Tal como indicado na descrição do projeto, utilizamos uma livraria / API "PAPI", que dá acesso a várias medidas relacionadas com o CPU, como por exemplo a memória usada do Cpu e os caches hits/misses. Para garantir a validade e veracidade dos dados obtidos, são partilhados aqui os "specs" do computador em teste, bem como o facto de ter feito 3 testes para cada dado (apenas validável aos dados que não ultrapassem 40s de execução). 
 O computador em questão tem o sistema operativo Windows 10 Home 22H2, tem um CPU Intel i5-7300HQ 2.50Gz com 4 cores, com 8GB de RAM disponíveis (2400MHz). A cache L1 tem 256KB,L2 tem 1.0MB e L3 tem 6.0MB. Para cada teste com algoritmo diferente, foi iniciado outro programa e fechado o anterior, para permitir uma alocação independente de memória entre cada algoritmo. Tal como foi indicado nas aulas práticas, foi recomendado usar a flag -O2 para aumentar a perfomance do código compilado, aumentando assim um pouco o tempo de compilação. Os dados diretos registados do programa foram tempo de execução (em segundos), Data Cache Misses do L1 e L2. Os dados a ser calculados à mão serão MFLOPS (Million Floating Point Operations Per Second), SpeedUp e Eficiência.</p>
 
-<p style="font-size:30px;"><b>3.1 Medidas usadas para aumentar o performance em python</b></p>
+<p style="font-size:20px;"><b>3.1 Medidas usadas para aumentar o performance em python</b></p>
 
 <p style="font-size:15px;">Em python a tradução do codigo de c para python não basta comparando os resultados da multiplicação de linha para a multiplicação normal a multiplicação de linha ficava pior então nos usavamos variaveis para defenir arrays ou valores que seriam usados multiplas vezes de forma o obrigar o python a dar cache dos valores por exemplo:</p>
-
-```python
-def LineByLineMult(matrixA,matrixB,ma,mb):
-    matrixc = [[0.0 for _ in range(ma)] for _ in range(ma)]
-    for i in range(ma):
-        for k in range(ma):
-            aiK = matrixA[i][k] #cache
-            matrixBk = matrixB[k]
-            columnCache = matrixc[i]
-            for j in range(mb):
-                columnCache[j]  +=  aiK* matrixBk[j]
-            matrixc[i] = columnCache
-    for i in range(10):
-        print(matrixc[0][i], end=" ")
-    print()
-```
 <p style="font-size:30px;"><b>4. Resultados e Análises</b></p>
 
 <p style="font-size:15px;">Nesta secção vamos apresentar as tabelas de dados relevantes à análise e explicação dos algoritmos usados neste projeto.</p>
@@ -158,7 +115,7 @@ def LineByLineMult(matrixA,matrixB,ma,mb):
   <img src="graph2.png" style="width: 45%;" /> 
 </div>
 
-<p style="font-size:15px;">Com base nos dados coletados, podemos tirar várias conclusões importantes. Primeiro, é evidente que a implementação em C++ é significativamente mais rápida do que a implementação em Python para ambos os algoritmos de multiplicação de matrizes. Isso é esperado, pois C++ é uma linguagem compilada que geralmente oferece desempenho superior ao Python, que é uma linguagem interpretada. Segundo, embora não haja diferenças entre os 2 algoritmos em Python, em C++ o algoritmo de linha é mais eficiente que o algoritmo normal, devido à maneira como o algoritmo de linha organiza os dados para melhorar a sua acessibilidade,estando disponível mais frequentemente, em comparação com o normal, o que pode resultar em um uso mais eficiente da cache do CPU. Isso também reflete nos caches misses.</p>
+<p style="font-size:15px;">Com base nos dados coletados, podemos tirar várias conclusões importantes. Primeiro, é evidente que a implementação em C++ é significativamente mais rápida do que a implementação em Python para ambos os algoritmos de multiplicação de matrizes. Isso é esperado, pois C++ é uma linguagem compilada que geralmente oferece desempenho superior ao Python, que é uma linguagem interpretada. Segundo, embora não haja diferenças significativas entre os 2 algoritmos em Python, em C++, o algoritmo de linha é mais eficiente que o algoritmo normal, devido à maneira como o algoritmo de linha acede as duas matrizes, de linha para linha e quando se vai buscar algum objeto de uma array a memoria é adicionado na cache tanto esse valor como valores proximos deles por exemplo parte da linha como as linhas são iteradas neste algoritmo os valores já vão estar em cache o que vai diminuir os caches misses, em comparação com o normal que quando itera uma matrix pelo valor de coluna a coluna a cache vai estar a adicionar parte da linha mas não a vai chegar a utilizar sendo esses valores descartados quando puderiam ser usados pois o tamanho da cache é limitada, o que pode resultar em um uso menos eficiente da cache do CPU. Isso também reflete nos caches misses.</p>
 
 
 <p style="font-size:26px;"><b>4.2 Comparação entre L1 e L2 cache misses de Block</b></p>
@@ -195,5 +152,7 @@ Além disso, o Paralelo 1 parece ter ligeiramente mais caches misses no L1 e nã
 
 <p style="font-size:30px;"><b>5. Conclusões</b></p>
 
-<p style="font-size:15px;">Em conclusão, conseguimos perceber que os conceitos e teorias, que foram ensinadas nas aulas teóricas, podiam ser aplicados neste trabalho e os seus efeitos nos resultados observados, tanto para os programas sequenciais, como para os paralelos. Também foi interessante aplicar as técnicas necessárias para melhorar os desempenhos dos programas.</p>
+<p style="font-size:15px;">Em conclusão, conseguimos perceber que os conceitos e teorias, que foram ensinadas nas aulas teóricas, podiam ser aplicados neste trabalho e os seus efeitos nos resultados observados, tanto para os programas sequenciais, como para os paralelos. Também foi interessante aplicar as técnicas necessárias para melhorar os desempenhos dos programas.
+</p>
+<a href=https://docs.google.com/spreadsheets/d/197V1KMSqUTFJnGinQ_Q7ub3Wc1TLQWRoM6auXsfyjaM/edit?usp=sharing>Spreadsheet</a>
 
