@@ -1,30 +1,56 @@
 import java.io.*;
 import java.net.*;
+import java.io.IOException;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 public class Server {
 
 
     //Server attributes
-    private int port;
-    private int mode;
+    private final int port;
+    private final int mode;
+    private ServerSocketChannel serverSocket;
+    private final ExecutorService threadsGame;
+    private final ExecutorService threadsPlayers;
 
     //Constants
 
     private final int TIMEOUT = 10000;
     private final int PING = 5000;
     private final int MAX_PARALLEL_GAMES = 5;
-    private final int MAX_PLAYERS = 4;  
-
+    private final int MAX_PLAYERS = 4; 
+    private final int TIME_INTERVAL = 2;
     
-
-    public Server(int port, int mode) {
+    //Constructor
+    public Server(int port, int mode) throws IOException{
 
         this.port = port;
         this.mode = mode;
-
+        this.threadsGame = Executors.newFixedThreadPool(this.MAX_PARALLEL_GAMES);
+        this.threadsPlayers = Executors.newFixedThreadPool(this.MAX_PLAYERS);
+   
     }
     
+    //Start Server
+    public void start() throws IOException {
+
+        this.serverSocket = ServerSocketChannel.open();
+        System.out.println("Server started on port " + this.port + " with mode " + this.mode);
+
+    }
+
+    //Run Server
+    public void run() throws IOException {
+
+         
+
+    }
 
     public static void main(String[] args) {
         
@@ -51,14 +77,15 @@ public class Server {
         try {
 
             Server server = new Server(port, mode);
+            server.start();
+            server.run();
         
-        }
+        } catch (IOException e) {
 
-    } catch (IOException e) {
+            System.out.println("Server Error: " + e.getMessage());
+            System.exit(1);
 
-        System.out.println("Server Error: " + e.getMessage());
-        System.exit(1);
-
+        } 
     }
     
 }
