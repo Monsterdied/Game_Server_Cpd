@@ -4,14 +4,14 @@ CREATE TABLE Player (
     name TEXT NOT NULL,
     password TEXT NOT NULL,
     money REAL DEFAULT 40.0,
-    current_game INTEGER,
+    current_game INTEGER DEFAULT NULL,
     curr_bet REAL DEFAULT 0.0,
     FOREIGN KEY(current_game) REFERENCES Game(id)
 );
 DROP TABLE IF EXISTS Game;
 CREATE TABLE Game (
     id INTEGER PRIMARY KEY,
-    crashed_time TIMESTAMP -- or DATETIME, depending on your needs
+    crashed_time TIMESTAMP DEFAULT NULL-- or DATETIME, depending on your needs
     -- add other fields related to the game if needed
 );
 

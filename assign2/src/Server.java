@@ -7,8 +7,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.locks.ReentrantLock;
-
-
 public class Server {
 
 
@@ -34,7 +32,17 @@ public class Server {
         this.mode = mode;
         this.threadsGame = Executors.newFixedThreadPool(this.MAX_PARALLEL_GAMES);
         this.threadsPlayers = Executors.newFixedThreadPool(this.MAX_PLAYERS);
-   
+        Database db = new Database();
+        int i = 1;
+        Player p = db.getPlayer(i);
+        System.out.println("Players in database:");
+        System.out.println("ID, Name, Money, Current Game, Current Bet");
+
+        while(p != null) {
+            System.out.println(p.getId() + ", " + p.getName() + ", " + p.getMoney() + ", " + p.getCurrentGame() + ", " + p.getCurrBet());
+            i++;
+            p = db.getPlayer(i);
+        }
     }
     
     //Start Server
