@@ -157,6 +157,7 @@ public class Server {
         
     }
     public static void main(String[] args) {
+
         
         //Check for correct number of command line arguments
         if(args.length != 2) {

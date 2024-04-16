@@ -3,6 +3,7 @@ import java.util.*;
 
 public class Database {
     public static Connection conn;
+    
     public Database() {
         // Load the SQLite JDBC driver
         // Define the JDBC URL
@@ -21,6 +22,7 @@ public class Database {
             throw new Error("Problem", e);
         }
     }
+    
     public Player getPlayer(Integer id) {
         try {
             checkConnection();
@@ -88,6 +90,7 @@ public class Database {
             throw new Error("Problem", e);
         }
     }
+    
     public boolean addPlayer(Player player) {
         try {
             checkConnection();
@@ -99,6 +102,7 @@ public class Database {
             throw new Error("Problem", e);
         }
     }
+    
     public boolean addGame(Game game) {
         try {
             checkConnection();
@@ -110,6 +114,7 @@ public class Database {
             throw new Error("Problem", e);
         }
     }
+    
     public List<Integer> getGame(Integer id) {
         try {
             checkConnection();
@@ -128,6 +133,7 @@ public class Database {
             throw new Error("Problem", e);
         }
     }
+    
     public List<Integer> getGames(){
         checkConnection();
         try {
@@ -144,6 +150,147 @@ public class Database {
             throw new Error("Problem", e);
         }
     }
+
+    public String getName(Integer id){
+        try {
+            checkConnection();
+            Statement stmt = this.conn.createStatement();
+            String q1 = "select name from Player where id = " + id;
+            ResultSet rs = stmt.executeQuery(q1);
+            if (rs.next()) {
+                return rs.getString("name");
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new Error("Problem", e);
+        }
+    }
+    
+    public boolean setName(Integer id, String name){
+        try {
+            checkConnection();
+            Statement stmt = this.conn.createStatement();
+            String q1 = "update Player set name = '" + name + "' where id = " + id;
+            stmt.executeUpdate(q1);
+            return true;
+        } catch(SQLException e) {
+            throw new Error("Problem", e);
+        }
+    }
+    
+    public String getPassword(Integer id){
+        try {
+            checkConnection();
+            Statement stmt = this.conn.createStatement();
+            String q1 = "select password from Player where id = " + id;
+            ResultSet rs = stmt.executeQuery(q1);
+            if (rs.next()) {
+                return rs.getString("password");
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new Error("Problem", e);
+        }
+    }
+    
+    public boolean setPassword(Integer id, Integer password){
+        try {
+            checkConnection();
+            Statement stmt = this.conn.createStatement();
+            String q1 = "update Player set password = " + password + " where id = " + id;
+            stmt.executeUpdate(q1);
+            return true;
+        } catch(SQLException e) {
+            throw new Error("Problem", e);
+        }
+    }
+
+    public int getMoney(Integer id){
+        try {
+            checkConnection();
+            Statement stmt = this.conn.createStatement();
+            String q1 = "select money from Player where id = " + id;
+            ResultSet rs = stmt.executeQuery(q1);
+            if (rs.next()) {
+                return rs.getInt("money");
+            } else {
+                return -1;
+            }
+        } catch (SQLException e) {
+            throw new Error("Problem", e);
+        }
+    }
+
+    public boolean setMoney(Integer id, Integer money){
+        try {
+            checkConnection();
+            Statement stmt = this.conn.createStatement();
+            String q1 = "update Player set money = " + money + " where id = " + id;
+            stmt.executeUpdate(q1);
+            return true;
+        } catch(SQLException e) {
+            throw new Error("Problem", e);
+        }
+    }
+    
+    public int getPlayerGame(Integer id){
+        try {
+            checkConnection();
+            Statement stmt = this.conn.createStatement();
+            String q1 = "select current_game from Player where id = " + id;
+            ResultSet rs = stmt.executeQuery(q1);
+            if (rs.next()) {
+                return rs.getInt("current_game");
+            } else {
+                return -1;
+            }
+        } catch (SQLException e) {
+            throw new Error("Problem", e);
+        }
+    }
+    
+    public boolean setPlayerGame(Integer id, Integer game){
+        try {
+            checkConnection();
+            Statement stmt = this.conn.createStatement();
+            String q1 = "update Player set current_game = " + game + " where id = " + id;
+            stmt.executeUpdate(q1);
+            return true;
+        } catch(SQLException e) {
+            throw new Error("Problem", e);
+        }
+    }
+
+    public int getBet(Integer id){
+        try {
+            checkConnection();
+            Statement stmt = this.conn.createStatement();
+            String q1 = "select curr_bet from Player where id = " + id;
+            ResultSet rs = stmt.executeQuery(q1);
+            if (rs.next()) {
+                return rs.getInt("curr_bet");
+            } else {
+                return -1;
+            }
+        } catch (SQLException e) {
+            throw new Error("Problem", e);
+        }
+    }
+
+    public boolean setBet(Integer id, Integer bet){
+        try {
+            checkConnection();
+            Statement stmt = this.conn.createStatement();
+            String q1 = "update Player set curr_bet = " + bet + " where id = " + id;
+            stmt.executeUpdate(q1);
+            return true;
+        } catch(SQLException e) {
+            throw new Error("Problem", e);
+        }
+    }
+
     public void close() {
         try {
             this.conn.close();
@@ -151,6 +298,7 @@ public class Database {
             throw new Error("Problem", e);
         }
     }
+    
     public void checkConnection() {
         try {
             if (this.conn.isClosed()){
