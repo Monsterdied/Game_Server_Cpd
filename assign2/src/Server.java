@@ -32,7 +32,9 @@ public class Server {
         this.mode = mode;
         this.threadsGame = Executors.newFixedThreadPool(this.MAX_PARALLEL_GAMES);
         this.threadsPlayers = Executors.newFixedThreadPool(this.MAX_PLAYERS);
+        
         Database db = new Database();
+        
         int i = 1;
         Player p = db.getPlayer(i);
         System.out.println("Players in database:");
@@ -61,6 +63,7 @@ public class Server {
     }
 
     public static void main(String[] args) {
+
         
         //Check for correct number of command line arguments
         if(args.length != 2) {
