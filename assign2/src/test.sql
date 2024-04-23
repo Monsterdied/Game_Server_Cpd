@@ -6,6 +6,7 @@ CREATE TABLE Player (
     money REAL DEFAULT 40.0,
     current_game INTEGER DEFAULT NULL,
     curr_bet REAL DEFAULT 0.0,
+    bet_multiplier REAL DEFAULT 1.0,
     FOREIGN KEY(current_game) REFERENCES Game(id)
 );
 DROP TABLE IF EXISTS Game;
