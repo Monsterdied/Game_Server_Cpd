@@ -8,19 +8,36 @@ public class Client {
     Socket socket; 
     PrintWriter writer;
     BufferedReader reader;
+    static boolean exit = false;
+    private static int TimeRetry = 5;
     public static void main(String[] args) {
         Client client = new Client();
         if (args.length < 2) return;
 
         String hostname = args[0];
         int port = Integer.parseInt(args[1]);
+        while (!exit){
+            client.connect(hostname, port);
+            System.out.println("Connection Lost, retrying in "+ client.TimeRetry + "seconds");
+            try {
+                Thread.sleep(client.TimeRetry * 1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (client.TimeRetry < 60){
+                client.TimeRetry *= 2;
+            }
+        }
+    }
+    public void connect(String hostname, int port){
         try  {
-            client.socket = new Socket(hostname, port);
-            OutputStream output = client.socket.getOutputStream();
-            client.writer = new PrintWriter(output, true);
-            InputStream input = client.socket.getInputStream();
-            client.reader = new BufferedReader(new InputStreamReader(input));
-            client.welcomeMenu();
+            this.socket = new Socket(hostname, port);
+            OutputStream output = this.socket.getOutputStream();
+            this.writer = new PrintWriter(output, true);
+            InputStream input = this.socket.getInputStream();
+            this.reader = new BufferedReader(new InputStreamReader(input));
+            this.TimeRetry = 5;
+            this.welcomeMenu();
         } catch (UnknownHostException ex) {
 
             System.out.println("Server not found: " + ex.getMessage());
@@ -29,8 +46,6 @@ public class Client {
 
             System.out.println("I/O error: " + ex.getMessage());
         }
-        
-        
     }
     public void welcomeMenu(){
             Scanner scanner = new Scanner(System.in); 
@@ -61,6 +76,7 @@ public class Client {
                 System.out.println(e.getMessage());
                 };
         }
+    
     public void attemptLogin(Scanner scanner) throws Exception{
         System.out.println("Sent login request to server");
         writer.println("login");
