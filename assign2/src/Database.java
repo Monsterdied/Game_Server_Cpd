@@ -38,7 +38,47 @@ public class Database {
             throw new Error("Problem", e);
         }
     }
-    
+    public Player getPlayerByName(String name) {
+        try {
+            checkConnection();
+            Statement stmt = this.conn.createStatement();
+            String q1 = "select * from Player where name = " + name;
+            ResultSet rs = stmt.executeQuery(q1);
+            if (rs.next()) {
+                return new Player(rs.getInt("id"), rs.getString("name"), rs.getInt("money"), rs.getInt("current_game"), rs.getInt("curr_bet"));
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new Error("Problem", e);
+        }
+    }
+    public String getPlayerPassword(String name) {
+        try {
+            checkConnection();
+            Statement stmt = this.conn.createStatement();
+            String q1 = "select * from Player where name = " + name;
+            ResultSet rs = stmt.executeQuery(q1);
+            if (rs.next()) {
+                return rs.getString("password");
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new Error("Problem", e);
+        }
+    }
+    public boolean createPlayer(Player player,String password) {
+        try {
+            checkConnection();
+            Statement stmt = this.conn.createStatement();
+            String q1 = "insert into Player (name, money, current_game, curr_bet, password) values ('" + player.getName() + "', " + player.getMoney() + ", " + player.getCurrentGame() + ", " + player.getCurrBet() + ", '" + password + "')";
+            stmt.executeUpdate(q1);
+            return true;
+        } catch (SQLException e) {
+            throw new Error("Problem", e);
+        }
+    }
     public boolean updatePlayer(Player player) {
         try {
             checkConnection();

@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS Player;
 CREATE TABLE Player (
     id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL,
+    name TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     money REAL DEFAULT 40.0,
     current_game INTEGER DEFAULT NULL,
