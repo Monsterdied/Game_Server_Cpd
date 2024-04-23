@@ -41,6 +41,7 @@ public class Client {
             System.out.println("3. Exit");
             try{
                 int choice = scanner.nextInt();
+                scanner.nextLine(); //não comer /n
 
             switch (choice) {
                 case 1:

@@ -26,6 +26,12 @@ public class Game {
         this.players = players;
         this.random = new Random();
     }
+    public int getGameID() {
+        return gameID;
+    }
+    public Date getCrachedTime() {
+        return crashedTime;
+    }
     
     public void start() {
 
