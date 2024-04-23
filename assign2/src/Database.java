@@ -42,10 +42,13 @@ public class Database {
         try {
             checkConnection();
             Statement stmt = this.conn.createStatement();
-            String q1 = "select * from Player where name = " + name;
+            String q1 = "select * from Player where name = '" + name + "';";
+            System.out.println(q1);
             ResultSet rs = stmt.executeQuery(q1);
+            System.out.println(rs);
             if (rs.next()) {
-                return new Player(rs.getInt("id"), rs.getString("name"), rs.getInt("money"), rs.getInt("current_game"), rs.getInt("curr_bet"));
+                Player player = new Player(rs.getInt("id"), rs.getString("name"), rs.getInt("money"), rs.getInt("current_game"), rs.getInt("curr_bet"));
+                return player;
             } else {
                 return null;
             }
@@ -57,7 +60,7 @@ public class Database {
         try {
             checkConnection();
             Statement stmt = this.conn.createStatement();
-            String q1 = "select * from Player where name = " + name;
+            String q1 = "select * from Player where name = '" + name + "';";
             ResultSet rs = stmt.executeQuery(q1);
             if (rs.next()) {
                 return rs.getString("password");
@@ -73,6 +76,7 @@ public class Database {
             checkConnection();
             Statement stmt = this.conn.createStatement();
             String q1 = "insert into Player (name, money, current_game, curr_bet, password) values ('" + player.getName() + "', " + player.getMoney() + ", " + player.getCurrentGame() + ", " + player.getCurrBet() + ", '" + password + "')";
+            System.out.println(q1);
             stmt.executeUpdate(q1);
             return true;
         } catch (SQLException e) {
@@ -107,7 +111,7 @@ public class Database {
         try {
             checkConnection();
             Statement stmt = this.conn.createStatement();
-            String q1 = "insert into Game (id, players) values (" + ((game.getGameID()== null) ? "NULL" : game.getGameID() )+ ", " + game.getCrachedTime() + ")";
+            String q1 = "insert into Game (id, players) values (" + ((Integer.valueOf(game.getGameID()) == null) ? "NULL" : game.getGameID() )+ ", " + game.getCrachedTime() + ")";
             stmt.executeUpdate(q1);
             return true;
         } catch (SQLException e) {

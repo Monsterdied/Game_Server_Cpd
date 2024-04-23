@@ -41,6 +41,7 @@ public class Client {
             System.out.println("3. Exit");
             try{
                 int choice = scanner.nextInt();
+                scanner.nextLine(); //não comer /n
 
             switch (choice) {
                 case 1:
@@ -68,6 +69,7 @@ public class Client {
             String username = scanner.nextLine();
                 writer.println(username);
                 String answer = reader.readLine();
+                System.out.println(answer);
                 if (answer.equals("username found")){
                     break;
                 }
