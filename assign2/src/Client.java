@@ -101,6 +101,7 @@ public class Client {
             }
             System.out.println("Answer Wrong retry :");
         }
+        System.out.println("Login Successful");
     }
     public void attemptRegister(Scanner scanner) throws Exception{
         System.out.println("Sent Register request to server");
@@ -119,6 +120,9 @@ public class Client {
         String password = scanner.nextLine();
         writer.println(hashPassword(password));
         String answer = reader.readLine();
+        if (answer.equals("register successful")){
+            System.out.println("Register Successful");
+        }
     }
     public String hashPassword(String password){
         try {
