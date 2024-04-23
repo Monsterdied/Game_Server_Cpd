@@ -167,7 +167,7 @@ public class Database {
         }
     }
 
-    public int getMoney(Integer id){
+    public double getMoney(Integer id){
         try {
             checkConnection();
             Statement stmt = this.conn.createStatement();
@@ -183,7 +183,7 @@ public class Database {
         }
     }
 
-    public boolean setMoney(Integer id, Integer money){
+    public boolean setMoney(Integer id, Double money){
         try {
             checkConnection();
             Statement stmt = this.conn.createStatement();
@@ -223,7 +223,7 @@ public class Database {
         }
     }
 
-    public int getBet(Integer id){
+    public double getBet(Integer id){
         try {
             checkConnection();
             Statement stmt = this.conn.createStatement();
@@ -239,7 +239,7 @@ public class Database {
         }
     }
 
-    public boolean setBet(Integer id, Integer bet){
+    public boolean setBet(Integer id, Double bet){
         try {
             checkConnection();
             Statement stmt = this.conn.createStatement();

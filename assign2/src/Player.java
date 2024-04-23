@@ -1,11 +1,11 @@
 public class Player{
     private int id;
     private String name;
-    private int money;
+    private double money;
     private int current_game;
-    private int curr_bet;
+    private double curr_bet;
 
-    public Player(int id, String name, int money, int current_game, int curr_bet) {
+    public Player(int id, String name, double money, int current_game, double curr_bet) {
         this.id = id;
         this.name = name;
         this.money = money;
@@ -21,7 +21,7 @@ public class Player{
         return this.name;
     }
 
-    public int getMoney() {
+    public double getMoney() {
         return this.money;
     }
 
@@ -29,11 +29,11 @@ public class Player{
         return this.current_game;
     }
 
-    public int getCurrBet() {
+    public double getCurrBet() {
         return this.curr_bet;
     }
 
-    public void setMoney(int money) {
+    public void setMoney(double money) {
         this.money = money;
     }
 
@@ -41,7 +41,7 @@ public class Player{
         this.current_game = current_game;
     }
 
-    public void setCurrBet(int curr_bet) {
+    public void setCurrBet(double curr_bet) {
         this.curr_bet = curr_bet;
     }
 }
