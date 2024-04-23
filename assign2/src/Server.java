@@ -7,6 +7,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.Objects;  
+
 public class Server {
 
 
@@ -118,12 +120,12 @@ public class Server {
         }
     }
     void attemptLogin(BufferedReader reader, PrintWriter writer) throws IOException {
-        writer.println("login");
         String username = "";
         while (true){
             username = reader.readLine();
             Player player = this.database.getPlayerByName(username);
             if (player != null){
+                System.out.println("username found");
                 writer.println("username found");
                 break;
             }
@@ -144,7 +146,7 @@ public class Server {
         while (true){
             username = reader.readLine();
             Player player = this.database.getPlayerByName(username);
-            if (player == null){
+            if (Objects.isNull(player)){
                 writer.println("username not found");
                 break;
             }
