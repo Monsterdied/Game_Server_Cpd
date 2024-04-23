@@ -26,11 +26,12 @@ public class Game implements Runnable{
         this.players = players;
         this.random = new Random();
     }
+
     public int getGameID() {
-        return gameID;
+        return this.gameID;
     }
-    public Date getCrachedTime() {
-        return crashedTime;
+    public Date getCrashedTime() {
+        return this.crashedTime;
     }
     
     public void run() {
