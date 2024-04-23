@@ -152,7 +152,7 @@ public class Server {
             }
             writer.println("username found");
         }
-        Player player = new Player(1, username, 1000, 0, 0);
+        Player player = new Player(1, username, 1000.0, 0, 0.0, 1.0);
         String password = reader.readLine();
         this.database.createPlayer(player, password);
         writer.println("register successful");

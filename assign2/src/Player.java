@@ -4,13 +4,15 @@ public class Player{
     private double money;
     private int current_game;
     private double curr_bet;
+    private double bet_multiplier;
 
-    public Player(int id, String name, double money, int current_game, double curr_bet) {
+    public Player(int id, String name, double money, int current_game, double curr_bet, double bet_multiplier) {
         this.id = id;
         this.name = name;
         this.money = money;
         this.current_game = current_game;
         this.curr_bet = curr_bet;
+        this.bet_multiplier = bet_multiplier;
     }
 
     public int getId() {
@@ -43,5 +45,13 @@ public class Player{
 
     public void setCurrBet(double curr_bet) {
         this.curr_bet = curr_bet;
+    }
+
+    public double getBetMultiplier() {
+        return this.bet_multiplier;
+    }
+
+    public void setBetMultiplier(double bet_multiplier) {
+        this.bet_multiplier = bet_multiplier;
     }
 }

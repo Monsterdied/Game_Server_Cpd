@@ -30,7 +30,7 @@ public class Database {
             String q1 = "select * from Player where id = " + id;
             ResultSet rs = stmt.executeQuery(q1);
             if (rs.next()) {
-                return new Player(rs.getInt("id"), rs.getString("name"), rs.getInt("money"), rs.getInt("current_game"), rs.getInt("curr_bet"));
+                return new Player(rs.getInt("id"), rs.getString("name"), rs.getDouble("money"), rs.getInt("current_game"), rs.getDouble("curr_bet"), rs.getDouble("bet_multiplier"));
             } else {
                 return null;
             }
@@ -38,6 +38,7 @@ public class Database {
             throw new Error("Problem", e);
         }
     }
+    
     public Player getPlayerByName(String name) {
         try {
             checkConnection();
@@ -47,7 +48,7 @@ public class Database {
             ResultSet rs = stmt.executeQuery(q1);
             System.out.println(rs);
             if (rs.next()) {
-                Player player = new Player(rs.getInt("id"), rs.getString("name"), rs.getInt("money"), rs.getInt("current_game"), rs.getInt("curr_bet"));
+                Player player = new Player(rs.getInt("id"), rs.getString("name"), rs.getDouble("money"), rs.getInt("current_game"), rs.getDouble("curr_bet"), rs.getDouble("bet_multiplier"));
                 return player;
             } else {
                 return null;
@@ -56,6 +57,7 @@ public class Database {
             throw new Error("Problem", e);
         }
     }
+    
     public String getPlayerPassword(String name) {
         try {
             checkConnection();
@@ -71,6 +73,7 @@ public class Database {
             throw new Error("Problem", e);
         }
     }
+    
     public boolean createPlayer(Player player,String password) {
         try {
             checkConnection();
@@ -83,6 +86,7 @@ public class Database {
             throw new Error("Problem", e);
         }
     }
+    
     public boolean updatePlayer(Player player) {
         try {
             checkConnection();
@@ -288,6 +292,34 @@ public class Database {
             checkConnection();
             Statement stmt = this.conn.createStatement();
             String q1 = "update Player set curr_bet = " + bet + " where id = " + id;
+            stmt.executeUpdate(q1);
+            return true;
+        } catch(SQLException e) {
+            throw new Error("Problem", e);
+        }
+    }
+
+    public double getMultiplier(Integer id){
+        try {
+            checkConnection();
+            Statement stmt = this.conn.createStatement();
+            String q1 = "select bet_multiplier from Player where id = " + id;
+            ResultSet rs = stmt.executeQuery(q1);
+            if (rs.next()) {
+                return rs.getInt("bet_multiplier");
+            } else {
+                return -1;
+            }
+        } catch (SQLException e) {
+            throw new Error("Problem", e);
+        }
+    }
+
+    public boolean setMultiplier(Integer id, Double multiplier){
+        try {
+            checkConnection();
+            Statement stmt = this.conn.createStatement();
+            String q1 = "update Player set bet_multiplier = " + multiplier + " where id = " + id;
             stmt.executeUpdate(q1);
             return true;
         } catch(SQLException e) {
