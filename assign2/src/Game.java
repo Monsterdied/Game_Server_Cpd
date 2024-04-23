@@ -32,27 +32,56 @@ public class Game implements Runnable{
             System.out.println("Starting game " + gameID);
             System.out.println("Players: ");
             for (Player player : players) {
-                System.out.println(player.getName());
+                System.out.println(player.getName() + " " + player.getMoney() + " " + player.getCurrBet() + " " + player.getBetMultiplier());
             }
 
             for (int i = 0; i < rounds; i++) {
                 System.out.println("Round " + i);
-                multiplier = random.nextDouble() * 2;
-                System.out.println("Multiplier: " + multiplier);
-                for (Player player : players) {
-                    player.setCurrBet(player.getCurrBet() * multiplier);
-                    System.out.println(player.getName() + " bet: " + player.getCurrBet());
-                }
+                playRound();
+                
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    public void playRound() {
+        multiplier = 1.0;
+        while(true){
+            
+            multiplier += 0.1;
+            System.out.println("Multiplier: " + String.format("%.1f", multiplier));
+            
+            if(random.nextDouble() < 0.1){
+                System.out.println("Crashed!");
+                break;
+            }
+
+            try{
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        for(Player player : players){
+            if(player.getBetMultiplier()>multiplier){
+                System.out.println(player.getName() + " lost " + player.getCurrBet());
+                player.setMoney(player.getMoney() - player.getCurrBet());
+            }
+            else if(player.getBetMultiplier()<=multiplier){
+                System.out.println(player.getName() + " won " + player.getCurrBet());
+                player.setMoney(player.getBetMultiplier() * player.getCurrBet() + player.getMoney());
+            }
+            System.out.println("Player " + player.getName() + " has " + player.getMoney() + " money");
+            
+        }
+    }
     
 
     public static void main(String[] args) {
-            Player player1 = new Player(1,"Joao",100,-1,-1);
-            Player player2 = new Player(2,"Maria",200,-1,-1);
+            Player player1 = new Player(1,"Joao",100,1,30,1.3);
+            Player player2 = new Player(2,"Maria",100,1,30,1.1);
 
             List<Player> players = new ArrayList<Player>();
             players.add(player1);
