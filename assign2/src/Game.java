@@ -13,7 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Game implements Runnable{
 
-    private List<Player> players;
+    private ArrayList<Pair<Player,SocketChannel>> players;
     private Integer gameID;
     private Date crashedTime = null;
 
@@ -22,7 +22,7 @@ public class Game implements Runnable{
     private Random random;
     public int rounds = 5;
 
-    public Game(int gameID, List<Player> players) {
+    public Game(int gameID, ArrayList<Pair<Player,SocketChannel>> players) {
         this.gameID = gameID;
         this.players = players;
         this.random = new Random();
@@ -39,7 +39,8 @@ public class Game implements Runnable{
         try{
             System.out.println("Starting game " + gameID);
             System.out.println("Players: ");
-            for (Player player : players) {
+            for (Pair<Player, SocketChannel> pair : players) {
+                Player player = pair.getKey();
                 System.out.println(player.getName() + " " + player.getMoney() + " " + player.getCurrBet() + " " + player.getBetMultiplier());
             }
 
@@ -58,7 +59,8 @@ public class Game implements Runnable{
 
         Scanner scanner = new Scanner(System.in);
 
-        for(Player player : players){
+        for(Pair<Player, SocketChannel> pair : players){
+            Player player = pair.getKey();
             this.askPlayerInfo(player, scanner);
         }
 
@@ -79,7 +81,10 @@ public class Game implements Runnable{
             }
         }
         
-        for(Player player : players){
+        for(Pair<Player, SocketChannel> pair : players){
+            
+            Player player = pair.getKey();
+
             if(player.getBetMultiplier()>multiplier){
                 System.out.println(player.getName() + " bet " + player.getCurrBet() + "with multiplier " + player.getBetMultiplier() + " but the multiplier was " + multiplier);
                 System.out.println(player.getName() + " lost " + player.getCurrBet());
@@ -128,15 +133,5 @@ public class Game implements Runnable{
     }
     
 
-    public static void main(String[] args) {
-            Player player1 = new Player(1,"Joao",100,1,30,1.3);
-            Player player2 = new Player(2,"Maria",100,1,30,1.1);
-
-            List<Player> players = new ArrayList<Player>();
-            players.add(player1);
-            players.add(player2);
-            Game game = new Game(1, players);
-            game.run();
-    }
     
 }
