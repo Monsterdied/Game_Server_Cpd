@@ -54,7 +54,9 @@ public class Queue{
         return null;
     }
     public ArrayList<Pair<Player, SocketChannel>> getCasualGamePlayers() {
+        System.out.println("Casual Queue Size: " + this.casualQueue.size());
         if(this.casualQueue.size() >= this.players_per_game) {
+            System.out.println("Casual Game Started");
             ArrayList<Pair<Player, SocketChannel>> players = new ArrayList<Pair<Player, SocketChannel>>();
             for (int i = 0; i < this.players_per_game; i++){
                 players.add(this.casualQueue.get(i));

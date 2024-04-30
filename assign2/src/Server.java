@@ -26,7 +26,7 @@ public class Server {
     private final int MAX_PARALLEL_GAMES = 5;
     private final int MAX_PLAYERS = 4; 
     private final int TIME_INTERVAL = 2;
-    private final Queue queue = new Queue(4, 1000);
+    private final Queue queue = new Queue(1, 1000);
     Database database = new Database();
     //Constructor
     public Server(int port, int mode) throws IOException{
@@ -149,6 +149,7 @@ public class Server {
                     break;
             }
             if (players != null){
+                System.out.println("Game is starting with: " + players.size());
                 //Game game = new Game(players);
             }
         } catch (IOException e) {
