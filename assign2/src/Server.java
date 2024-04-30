@@ -115,10 +115,12 @@ public class Server {
             }
             if (player != null){
                 if (player.getCurrentGame() != -1){
-                    System.out.println("Hnadle reconnection");
-                    System.out.println("Player " + player.getName() + " is in the lobby");
+                    System.out.println("Handle new queue request");
+                    writer.println("Type of game:");
+                    AddToqueue(writer, reader, player, socket);
                 } else {
-                    System.out.println("Player " + player.getName() + " is in game " + player.getCurrentGame());
+                    System.out.println("Handle reconnection");
+                    System.out.println("Player " + player.getName() + " is in the lobby");
                 }
                 System.out.println("Player " + player.getName() + " connected");
             }
@@ -129,17 +131,18 @@ public class Server {
     void AddToqueue(PrintWriter writer,BufferedReader reader, Player player, SocketChannel socket) {
         ArrayList<Pair<Player, SocketChannel>> players = null;
         try {
-            switch (reader.readLine()){
-                case "ranked":
+            System.out.println("Adding player to queue");
+            String reading = reader.readLine();
+            System.out.println("Reading :" + reading);
+            switch (reading){
+                case "RANKED":
                     queue.AddPlayerToRanked(player, socket);
                     players =  queue.getRankedGamePlayers();
                     break;
-                case "casual":
+                case "NORMAL":
+                    System.out.println("Adding player to casual queue");
                     queue.AddPlayerToCasual(player, socket);
                     players = queue.getCasualGamePlayers();
-                    break;
-                case "exit":
-                    System.exit(0);
                     break;
                 default:
                     writer.println("Invalid choice");

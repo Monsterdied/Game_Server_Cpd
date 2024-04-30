@@ -131,10 +131,11 @@ public class Client {
                     System.out.println("Invalid choice");
                     break;
             }
+            choose_Queue_Type(scanner);
             }catch(Exception e){
                 System.out.println(e.getMessage());
                 };
-            WaitStartGame();
+            
         }
     public void WaitStartGame(){
         try{
@@ -178,6 +179,43 @@ public class Client {
             System.out.println("Answer Wrong retry :");
         }
         System.out.println("Login Successful");
+    }
+    public void choose_Queue_Type(Scanner scanner) throws Exception{
+        System.out.println("testing");
+        String response = this.reader.readLine();
+        System.out.println(response);
+        if (response.equals("Type of game:")){
+            while (true){
+                System.out.println("Choose the type of queue you want to join");
+                System.out.println("1. Normal Queue");
+                System.out.println("2. Ranked Queue");
+                System.out.println("3. Exit");
+                String choice = scanner.nextLine();
+                if(choice.equals("1")){
+                    this.writer.println("NORMAL");
+                    break;
+                }
+                if(choice.equals("2")){
+                    this.writer.println("RANKED");
+                    break;
+                }
+                if(choice.equals("3")){
+                    System.exit(0);
+                }
+                System.out.println("Invalid choice");
+            }
+        }
+        if (response.equals("RANKED Reconnect")){
+            //TODO
+            System.out.println("Reconnecting to Ranked Queue");
+        }
+        if (response.equals("NORMAL Reconnect")){
+            //TODO
+            System.out.println("Reconnecting to Normal Queue");
+        }
+        WaitStartGame();
+
+
     }
     public void attemptRegister(Scanner scanner) throws Exception{
         System.out.println("Sent Register request to server");
