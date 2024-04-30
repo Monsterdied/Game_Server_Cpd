@@ -134,7 +134,19 @@ public class Client {
             }catch(Exception e){
                 System.out.println(e.getMessage());
                 };
+            WaitStartGame();
         }
+    public void WaitStartGame(){
+        try{
+            System.out.println("Waiting for game to start");
+            String answer = reader.readLine();
+            if (answer.equals("start")){
+                System.out.println("Game is starting");
+            }
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
     
     public void attemptLogin(Scanner scanner) throws Exception{
         System.out.println("Sent login request to server");
