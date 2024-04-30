@@ -44,7 +44,12 @@ public class Player{
     }
 
     public void setCurrBet(double curr_bet) {
-        this.curr_bet = curr_bet;
+        if(curr_bet > this.money){
+            this.curr_bet = this.money;
+        }
+        else{
+            this.curr_bet = curr_bet;
+        }
     }
 
     public double getBetMultiplier() {

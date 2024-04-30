@@ -7,6 +7,7 @@ import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.concurrent.locks.ReentrantLock;
 
 
@@ -54,6 +55,13 @@ public class Game implements Runnable{
 
     public void playRound() {
         multiplier = 1.0;
+
+        Scanner scanner = new Scanner(System.in);
+
+        for(Player player : players){
+            this.askPlayerInfo(player, scanner);
+        }
+
         while(true){
             
             multiplier += 0.1;
@@ -73,15 +81,49 @@ public class Game implements Runnable{
         
         for(Player player : players){
             if(player.getBetMultiplier()>multiplier){
+                System.out.println(player.getName() + " bet " + player.getCurrBet() + "with multiplier " + player.getBetMultiplier() + " but the multiplier was " + multiplier);
                 System.out.println(player.getName() + " lost " + player.getCurrBet());
                 player.setMoney(player.getMoney() - player.getCurrBet());
             }
             else if(player.getBetMultiplier()<=multiplier){
-                System.out.println(player.getName() + " won " + player.getCurrBet());
+                System.out.println(player.getName() + " bet " + player.getCurrBet() + " with multiplier " + player.getBetMultiplier());
+                System.out.println(player.getName() + " won " + player.getCurrBet() * player.getBetMultiplier());
                 player.setMoney(player.getBetMultiplier() * player.getCurrBet() + player.getMoney());
             }
             System.out.println("Player " + player.getName() + " has " + player.getMoney() + " money");
             
+        }
+    }
+
+
+    private void askPlayerInfo(Player player, Scanner scanner){
+        System.out.println("Player " + player.getName() + ", you have 10 seconds to insert your new bet and bet multiplier.");
+
+        Thread inputThread = new Thread(new Runnable(){
+            @Override
+            public void run(){
+                System.out.println("Enter your new bet: ");
+                double newBet = scanner.nextDouble();
+                System.out.println("Enter your new bet multiplier: ");
+                double newBetMultiplier = scanner.nextDouble();
+
+                player.setCurrBet(newBet);
+                player.setBetMultiplier(newBetMultiplier);
+                
+
+            }
+        });
+
+        inputThread.start();
+
+        try{
+            inputThread.join(10000);
+            if(inputThread.isAlive()){
+                System.out.println("Time's up!");
+                inputThread.interrupt();
+            }
+        } catch (InterruptedException e){
+            e.printStackTrace();
         }
     }
     
