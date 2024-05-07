@@ -12,7 +12,6 @@ public class Client {
     private int TimeRetry = 5;
     private String password;
     public String username;
-    private boolean autoRegister = false;
     public static void main(String[] args) {
             Client client = new Client();
         
@@ -33,14 +32,7 @@ public class Client {
             }
         }
     }
-    public Client(){
-    }
-    public Client(String username , String password, boolean loggedIn,boolean autoRegister){
-        this.username = username;
-        this.password =hashPassword(password);
-        this.loggedIn = loggedIn;
-        this.autoRegister = autoRegister;
-    }
+
     public void connect(String hostname, int port){
         try  {
             this.socket = new Socket(hostname, port);
@@ -49,11 +41,6 @@ public class Client {
             InputStream input = this.socket.getInputStream();
             this.reader = new BufferedReader(new InputStreamReader(input));
             this.TimeRetry = 5;
-            if (this.autoRegister){
-                System.out.println("Auto Registering");
-                autoRegisterTesting();
-                return;
-            }
             if (!loggedIn){
                 
                 this.welcomeMenu();
@@ -90,18 +77,6 @@ public class Client {
                 welcomeMenu();
             }        
             System.out.println("Relogin Successful");
-        }catch(Exception e){
-            System.out.println(e.getMessage());
-        };
-    }
-    public void autoRegisterTesting(){
-        writer.println("register");
-        writer.println(this.username);
-        System.out.println(this.username);
-        try{
-            String answer = reader.readLine();
-            writer.println(this.password);
-            answer = reader.readLine();      
         }catch(Exception e){
             System.out.println(e.getMessage());
         };
