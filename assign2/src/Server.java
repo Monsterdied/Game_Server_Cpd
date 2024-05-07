@@ -26,24 +26,32 @@ public class Server {
     private final int MAX_PARALLEL_GAMES = 5;
     private final int MAX_PLAYERS = 4; 
     private final int TIME_INTERVAL = 2;
-    private final Queue queue = new Queue(4, 1000);
+    private final Queue queue = new Queue(1, 1000);
     Database database = new Database();
+    private ReentrantLock databaseLock;
+    private ReentrantLock queueLock;
     //Constructor
     public Server(int port, int mode) throws IOException{
-
+        this.queueLock = new ReentrantLock();
+        this.databaseLock = new ReentrantLock();
         this.port = port;
         this.mode = mode;
         this.threadsGame = Executors.newFixedThreadPool(this.MAX_PARALLEL_GAMES);
         this.threadsPlayers = Executors.newFixedThreadPool(this.MAX_PLAYERS);
         int i = 1;
+        this.databaseLock.lock();
         Player p = database.getPlayer(i);
+        this.databaseLock.unlock();
         System.out.println("Players in database:");
         System.out.println("ID, Name, Money, Current Game, Current Bet");
 
         while(p != null) {
             System.out.println(p.getId() + ", " + p.getName() + ", " + p.getMoney() + ", " + p.getCurrentGame() + ", " + p.getCurrBet());
             i++;
+            this.databaseLock.lock();
             p = this.database.getPlayer(i);
+            this.databaseLock.unlock();
+            
         }
     }
     
@@ -115,10 +123,12 @@ public class Server {
             }
             if (player != null){
                 if (player.getCurrentGame() != -1){
-                    System.out.println("Hnadle reconnection");
-                    System.out.println("Player " + player.getName() + " is in the lobby");
+                    System.out.println("Handle new queue request");
+                    writer.println("Type of game:");
+                    AddToqueue(writer, reader, player, socket);
                 } else {
-                    System.out.println("Player " + player.getName() + " is in game " + player.getCurrentGame());
+                    System.out.println("Handle reconnection");
+                    System.out.println("Player " + player.getName() + " is in the lobby");
                 }
                 System.out.println("Player " + player.getName() + " connected");
             }
@@ -129,23 +139,25 @@ public class Server {
     void AddToqueue(PrintWriter writer,BufferedReader reader, Player player, SocketChannel socket) {
         ArrayList<Pair<Player, SocketChannel>> players = null;
         try {
-            switch (reader.readLine()){
-                case "ranked":
+            System.out.println("Adding player to queue");
+            String reading = reader.readLine();
+            System.out.println("Reading :" + reading);
+            switch (reading){
+                case "RANKED":
                     queue.AddPlayerToRanked(player, socket);
                     players =  queue.getRankedGamePlayers();
                     break;
-                case "casual":
+                case "NORMAL":
+                    System.out.println("Adding player to casual queue");
                     queue.AddPlayerToCasual(player, socket);
                     players = queue.getCasualGamePlayers();
-                    break;
-                case "exit":
-                    System.exit(0);
                     break;
                 default:
                     writer.println("Invalid choice");
                     break;
             }
             if (players != null){
+                System.out.println("Game is starting with: " + players.size());
                 //Game game = new Game(players);
             }
         } catch (IOException e) {
@@ -157,7 +169,9 @@ public class Server {
         Player player = null;
         while (true){
             username = reader.readLine();
+            this.databaseLock.lock();
             player = this.database.getPlayerByName(username);
+            this.databaseLock.unlock();
             if (player != null){
                 System.out.println("username found");
                 writer.println("username found");
@@ -167,7 +181,9 @@ public class Server {
         }
         while (true){
             String password = reader.readLine();
+            this.databaseLock.lock();
             String passwordHash = this.database.getPlayerPassword(username);
+            this.databaseLock.unlock();
             if (password.equals(passwordHash)){
                 writer.println("password correct");
                 break;
@@ -181,7 +197,9 @@ public class Server {
         Player player = null;
         while (true){
             username = reader.readLine();
+            this.databaseLock.lock();
             player = this.database.getPlayerByName(username);
+            this.databaseLock.unlock();
             if (Objects.isNull(player)){
                 writer.println("username not found");
                 break;
@@ -190,7 +208,9 @@ public class Server {
         }
         player = new Player(1, username, 1000.0, 0, 0.0, 1.0);
         String password = reader.readLine();
+        this.databaseLock.lock();
         this.database.createPlayer(player, password);
+        this.databaseLock.unlock();
         writer.println("register successful");
         return player;
     }

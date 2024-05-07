@@ -40,6 +40,7 @@ public class Database {
     }
     
     public Player getPlayerByName(String name) {
+        if(name == null) return null;
         try {
             checkConnection();
             Statement stmt = this.conn.createStatement();

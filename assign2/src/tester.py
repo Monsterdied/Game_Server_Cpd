@@ -1,22 +1,52 @@
 
 import pexpect
+import threading
+import random
+import time
+def Client(d, game_mode):
+    c = pexpect.spawn("java -cp '.:src' Client localhost 8000")
 
-c = pexpect.spawn("java -cp '.:src' Client localhost 8000")
+    c.expect('3. Exit')
+    print('And now for something completely different...')
+    c.sendline('1')
+    c.expect('Enter your Username: ')
+    time.sleep(2)
+    print("player"+str(d))
+    c.sendline("player"+str(d))
+    c.expect('Enter your Password: ')
+    print("password"+str(d))
+    time.sleep(2)
+    c.sendline("password"+str(d))
+    c.expect('Login Successful')
+    print("ok")
+    c.expect(b'Type of game:\r\nChoose the type of queue you want to join\r\n1. Normal Queue\r\n2. Ranked Queue\r\n3. Exit')
+    c.sendline(str(game_mode))
+    c.expect('Waiting for game to start')
+    print((c.before))
+    print(c.after, end=' ')
 
-c.expect('3. Exit')
-print('And now for something completely different...')
-c.sendline('1')
-c.expect('Enter your Username: ')
-c.sendline('player2')
-c.expect('Enter your Password: ')
-c.sendline('password2')
-c.expect('Login Successful')
-print("ok")
-print((c.before))
-print(c.after, end=' ')
+    #c.kill(1)
+    print('is alive:', c.isalive())
+# Execute functions in parallel (limited by GIL)
+def multiTreading(users):
+    threads = []
+    for i in range(users):
+        d = i + 1  # Numbers from 1 to 30
+        game_mode = random.randint(1,2)  # Replace with actual game mode values
+        thread = threading.Thread(target=Client, args=(d, 1))
+        threads.append(thread)
+        thread.start()
+        time.sleep(1)
 
-c.kill(1)
-print('is alive:', c.isalive())
+    # Wait for all threads to finish (optional)
+    for thread in threads:
+        thread.join()
+    print("All clients finished!")
+multiTreading(4)
+
+
+
+
 
 """
 

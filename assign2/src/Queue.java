@@ -39,6 +39,7 @@ public class Queue{
     }
 
     public ArrayList<Pair<Player, SocketChannel>> getRankedGamePlayers() {
+        //TODO need to make sure that the players are still there make a ping function
         for (int i = 0; i < this.rankedQueue.size() - this.players_per_game + 1; i++){
             Pair<Player, SocketChannel> first = this.rankedQueue.get(i);
             Pair<Player, SocketChannel> last = this.rankedQueue.get(i+players_per_game - 1);
@@ -54,7 +55,10 @@ public class Queue{
         return null;
     }
     public ArrayList<Pair<Player, SocketChannel>> getCasualGamePlayers() {
+        // #TODO need to make sure that the players are still there make a ping function
+        System.out.println("Casual Queue Size: " + this.casualQueue.size());
         if(this.casualQueue.size() >= this.players_per_game) {
+            System.out.println("Casual Game Started");
             ArrayList<Pair<Player, SocketChannel>> players = new ArrayList<Pair<Player, SocketChannel>>();
             for (int i = 0; i < this.players_per_game; i++){
                 players.add(this.casualQueue.get(i));
