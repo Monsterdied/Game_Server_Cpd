@@ -144,13 +144,17 @@ public class Server {
             System.out.println("Reading :" + reading);
             switch (reading){
                 case "RANKED":
+                    this.queueLock.lock();
                     queue.AddPlayerToRanked(player, socket);
                     players =  queue.getRankedGamePlayers();
+                    this.queueLock.unlock();
                     break;
                 case "NORMAL":
                     System.out.println("Adding player to casual queue");
-                    queue.AddPlayerToCasual(player, socket);
+                    this.queueLock.lock();
+                    this.queue.AddPlayerToCasual(player, socket);
                     players = queue.getCasualGamePlayers();
+                    this.queueLock.unlock();
                     break;
                 default:
                     writer.println("Invalid choice");
