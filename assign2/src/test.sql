@@ -4,26 +4,32 @@ CREATE TABLE Player (
     name TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     money REAL DEFAULT 40.0,
-    current_game INTEGER DEFAULT NULL,
+    current_game INTEGER DEFAULT -1,
     curr_bet REAL DEFAULT 0.0,
-    bet_multiplier REAL DEFAULT 1.0,
-    FOREIGN KEY(current_game) REFERENCES Game(id)
+    bet_multiplier REAL DEFAULT 1.0
 );
 DROP TABLE IF EXISTS Game;
 CREATE TABLE Game (
     id INTEGER PRIMARY KEY,
-    crashed_time TIMESTAMP DEFAULT NULL-- or DATETIME, depending on your needs
+    running BOOLEAN DEFAULT TRUE
     -- add other fields related to the game if needed
 );
-
+DROP TABLE IF EXISTS Round;
+CREATE TABLE Round (
+    id INTEGER PRIMARY KEY,
+    game_id INTEGER NOT NULL,
+    crashed_time TIMESTAMP DEFAULT NULL,-- or DATETIME, depending on your needs
+    -- add other fields related to the game if needed
+    FOREIGN KEY(game_id) REFERENCES Game(id)
+);
 INSERT INTO Player (name, password) VALUES ('Alice', 'password1');
 INSERT INTO Player (name, password) VALUES ('Bob', 'password2');
 INSERT INTO Player (name, password) VALUES ('Charlie', 'password3');
 
 -- Inserting sample games
-INSERT INTO Game (crashed_time) VALUES ('2024-04-09 12:30:00');
-INSERT INTO Game (crashed_time) VALUES ('2024-04-09 13:15:00');
-INSERT INTO Game (crashed_time) VALUES ('2024-04-09 14:00:00');
+INSERT INTO Game (running) VALUES (FALSE);
+INSERT INTO Game (running) VALUES (FALSE);
+INSERT INTO Game (running) VALUES (FALSE);
 
 -- Assigning players to games
 UPDATE Player SET current_game = 1 WHERE name = 'Alice';

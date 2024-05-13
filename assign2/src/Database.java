@@ -58,6 +58,26 @@ public class Database {
             throw new Error("Problem", e);
         }
     }
+        public List<Player> getPlayersInGame(Integer id) {
+        if(id == null) return null;
+        try {
+            checkConnection();
+            
+            Statement stmt = this.conn.createStatement();
+            String q1 = "select * from Player where current_game = " +id+ ";";
+            System.out.println(q1);
+            ResultSet rs = stmt.executeQuery(q1);
+            System.out.println(rs);
+            List<Player> players = new ArrayList<Player>();
+            while (rs.next()) {
+                Player player = new Player(rs.getInt("id"), rs.getString("name"), rs.getDouble("money"), rs.getInt("current_game"), rs.getDouble("curr_bet"), rs.getDouble("bet_multiplier"));
+                players.add(player);
+            }
+            return players;
+        } catch (SQLException e) {
+            throw new Error("Problem", e);
+        }
+    }
     
     public String getPlayerPassword(String name) {
         try {

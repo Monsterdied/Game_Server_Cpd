@@ -9,6 +9,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.Objects;  
 import java.util.ArrayList;
+import java.util.List;
 public class Server {
 
 
@@ -30,6 +31,7 @@ public class Server {
     Database database = new Database();
     private ReentrantLock databaseLock;
     private ReentrantLock queueLock;
+    private ReentrantLock timeLock;
     //Constructor
     public Server(int port, int mode) throws IOException{
         this.queueLock = new ReentrantLock();
@@ -38,6 +40,8 @@ public class Server {
         this.mode = mode;
         this.threadsGame = Executors.newFixedThreadPool(this.MAX_PARALLEL_GAMES);
         this.threadsPlayers = Executors.newFixedThreadPool(this.MAX_PLAYERS);
+
+        
         int i = 1;
         this.databaseLock.lock();
         Player p = database.getPlayer(i);
@@ -52,6 +56,10 @@ public class Server {
             p = this.database.getPlayer(i);
             this.databaseLock.unlock();
             
+        }
+        List<Player> players = database.getPlayersInGame(0);
+        for (Player player : players) {
+            System.out.println("Player " + player.getName() + " is in the lobby");
         }
     }
     
@@ -122,7 +130,7 @@ public class Server {
                     break;
             }
             if (player != null){
-                if (player.getCurrentGame() != -1){
+                if (player.getCurrentGame() == -1){
                     System.out.println("Handle new queue request");
                     writer.println("Type of game:");
                     AddToqueue(writer, reader, player, socket);
@@ -210,7 +218,7 @@ public class Server {
             }
             writer.println("username found");
         }
-        player = new Player(1, username, 1000.0, 0, 0.0, 1.0);
+        player = new Player(1, username, 1000.0, -1, 0.0, 1.0);
         String password = reader.readLine();
         this.databaseLock.lock();
         this.database.createPlayer(player, password);
