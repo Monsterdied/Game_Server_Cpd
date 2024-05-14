@@ -109,10 +109,6 @@ public class Server {
             Player player = null;
             System.out.println("Handling client...");
             socket.socket().setSoTimeout(this.TIMEOUT);
-            InputStream input = socket.socket().getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-            OutputStream output = socket.socket().getOutputStream();
-            PrintWriter writer = new PrintWriter(output, true);
             //String choice = reader.readLine();
             System.out.println("Wainting choice: ");
             String choice = Connections.receiveResponse(socket);
@@ -122,20 +118,20 @@ public class Server {
                     player = attemptLogin(socket);
                     break;
                 case "register":
-                    player = attemptRegister(reader, writer);
+                    player = attemptRegister(socket);
                     break;
                 case "exit":
                     System.exit(0);
                     break;
                 default:
-                    writer.println("Invalid choice");
+                    Connections.sendRequest(socket, "Invalid choice");
                     break;
             }
             if (player != null){
                 if (player.getCurrentGame() == -1){
                     System.out.println("Handle new queue request");
-                    writer.println("Type of game:");
-                    AddToqueue(writer, reader, player, socket);
+                    Connections.sendRequest(socket, "Type of game:");
+                    AddToqueue( player, socket);
                 } else {
                     System.out.println("Handle reconnection");
                     System.out.println("Player " + player.getName() + " is in the lobby");
@@ -146,11 +142,10 @@ public class Server {
             System.out.println("Server Error: " + e.getMessage());
         }
     }
-    void AddToqueue(PrintWriter writer,BufferedReader reader, Player player, SocketChannel socket) {
+    void AddToqueue(Player player, SocketChannel socket) {
         ArrayList<Pair<Player, SocketChannel>> players = null;
-        try {
             System.out.println("Adding player to queue");
-            String reading = reader.readLine();
+            String reading = Connections.receiveResponse(socket);
             System.out.println("Reading :" + reading);
             switch (reading){
                 case "RANKED":
@@ -167,7 +162,7 @@ public class Server {
                     this.queueLock.unlock();
                     break;
                 default:
-                    writer.println("Invalid choice");
+                    Connections.sendRequest(socket, "Invalid choice");
                     break;
             }
             if (players != null){
@@ -182,9 +177,7 @@ public class Server {
                 this.threadsGame.execute(game);
                 
             }
-        } catch (IOException e) {
-            System.out.println("Server Error: " + e.getMessage());
-        }
+
     }
     Player attemptLogin(SocketChannel socket) throws IOException {
         String username = "";
@@ -214,26 +207,26 @@ public class Server {
         }
         return player;
     }
-    Player attemptRegister(BufferedReader reader, PrintWriter writer) throws IOException {
+    Player attemptRegister(SocketChannel socket) throws IOException {
         String username = "";
         Player player = null;
         while (true){
-            username = reader.readLine();
+            username = Connections.receiveResponse(socket);
             this.databaseLock.lock();
             player = this.database.getPlayerByName(username);
             this.databaseLock.unlock();
             if (Objects.isNull(player)){
-                writer.println("username not found");
+                Connections.sendRequest(socket, "username not found");
                 break;
             }
-            writer.println("username found");
+            Connections.sendRequest(socket,"username found");
         }
         player = new Player(1, username, 1000.0, -1, 0.0, 1.0);
-        String password = reader.readLine();
+        String password = Connections.receiveResponse(socket);
         this.databaseLock.lock();
         this.database.createPlayer(player, password);
         this.databaseLock.unlock();
-        writer.println("register successful");
+        Connections.sendRequest(socket, "register successful");
         return player;
     }
     public static void main(String[] args) {
