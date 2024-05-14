@@ -36,12 +36,6 @@ public class Client {
         try  {
             this.socket = SocketChannel.open();
             socket.connect(new InetSocketAddress(hostname, port));
-            /*
-            this.socket = new Socket(hostname, port);
-            OutputStream output = this.socket.getOutputStream();
-            this.writer = new PrintWriter(output, true);
-            InputStream input = this.socket.getInputStream();
-            this.reader = new BufferedReader(new InputStreamReader(input));*/
             this.TimeRetry = 5;
             if (!loggedIn){
                 
@@ -161,34 +155,39 @@ public class Client {
         System.out.println("testing");
         String response = Connections.receiveResponse(this.socket);
         System.out.println(response);
-        if (response.equals("Type of game:")){
-            while (true){
-                System.out.println("Choose the type of queue you want to join");
-                System.out.println("1. Normal Queue");
-                System.out.println("2. Ranked Queue");
-                System.out.println("3. Exit");
-                String choice = scanner.nextLine();
-                if(choice.equals("1")){
-                    Connections.sendRequest(this.socket,"NORMAL");
-                    break;
+        switch(response){
+            case "Type of game:":
+                while (true){
+                    System.out.println("Choose the type of queue you want to join");
+                    System.out.println("1. Normal Queue");
+                    System.out.println("2. Ranked Queue");
+                    System.out.println("3. Exit");
+                    String choice = scanner.nextLine();
+                    if(choice.equals("1")){
+                        Connections.sendRequest(this.socket,"NORMAL");
+                        break;
+                    }
+                    if(choice.equals("2")){
+                        Connections.sendRequest(this.socket,"RANKED");
+                        break;
+                    }
+                    if(choice.equals("3")){
+                        System.exit(0);
+                    }
+                    System.out.println("Invalid choice");
                 }
-                if(choice.equals("2")){
-                    Connections.sendRequest(this.socket,"RANKED");
-                    break;
-                }
-                if(choice.equals("3")){
-                    System.exit(0);
-                }
-                System.out.println("Invalid choice");
-            }
-        }
-        if (response.equals("RANKED Reconnect")){
-            //TODO
-            System.out.println("Reconnecting to Ranked Queue");
-        }
-        if (response.equals("NORMAL Reconnect")){
-            //TODO
-            System.out.println("Reconnecting to Normal Queue");
+                break;
+            case "RANKED Reconnect":
+                //TODO
+                System.out.println("Reconnecting to Ranked Queue");
+                break;
+            case "NORMAL Reconnect":
+                //TODO
+                System.out.println("Reconnecting to Normal Queue");
+                break;
+            default:
+                System.out.println("Invalid choice:" + response);
+                break;
         }
         WaitStartGame();
 
