@@ -104,8 +104,14 @@ public class Game implements Runnable{
     }
 
     private void askPlayerInfo(Player player,Socket socket, Scanner scanner){
-        System.out.println("Player " + player.getName() + ", you have 10 seconds to insert your new bet and bet multiplier.");
 
+        System.out.println("Sent request to " + player.getName() + " to enter new bet and multiplier");
+    /*
+        try{
+            Connections.sendRequest(socket, "Enter your new bet: ");
+        }
+        */
+    /*
         Thread inputThread = new Thread(new Runnable(){
             @Override
             public void run(){
@@ -132,6 +138,7 @@ public class Game implements Runnable{
         } catch (InterruptedException e){
             e.printStackTrace();
         }
+    */
     }
 
 
