@@ -80,6 +80,7 @@ public class Client {
     public void welcomeMenu(){
             Scanner scanner = new Scanner(System.in); 
             System.out.println("Connected to the server.");
+            System.out.println("Welcome to the Crash Game!");
             System.out.println("Do u wish to login or register?");
             System.out.println("1. Login");
             System.out.println("2. Register");
@@ -99,7 +100,7 @@ public class Client {
                     System.exit(0);
                     break;
                 default:
-                    System.out.println("Invalid choice");
+                    System.out.println("Invalid choice.");
                     break;
             }
             choose_Queue_Type(scanner);
@@ -153,13 +154,13 @@ public class Client {
     }
     
     public void attemptLogin(Scanner scanner) throws Exception{
-        System.out.println("Sent login request to server");
+        System.out.println("User Sent login request to server.");
         Connections.sendRequest(this.socket,"login");
         while (true){
             System.out.print("Enter your Username: ");
             String username = scanner.nextLine();
                 Connections.sendRequest(this.socket,username);
-                System.out.println(username);
+                System.out.println("Username Selected is " + username);
                 String answer = Connections.receiveResponse(this.socket);
                 if (answer.equals("username found")){
                     this.username = username;
@@ -173,26 +174,24 @@ public class Client {
             String hashedPassword = hashPassword(password);
             Connections.sendRequest(this.socket,hashedPassword);
             String answer = Connections.receiveResponse(this.socket);
-            System.out.println(answer);
             if (answer.equals("password correct")){
                 this.password = hashedPassword;
                 this.loggedIn = true;
                 break;
             }
-            System.out.println("Answer Wrong retry :");
+            System.out.println("Wrong Password. Please retry.");
         }
         System.out.println("Login Successful");
     }
     public void choose_Queue_Type(Scanner scanner) throws Exception{
-        System.out.println("testing");
         String response = Connections.receiveResponse(this.socket);
         System.out.println(response);
         switch(response){
             case "Type of game:":
                 while (true){
                     System.out.println("Choose the type of queue you want to join");
-                    System.out.println("1. Normal Queue");
-                    System.out.println("2. Ranked Queue");
+                    System.out.println("1. Normal Queue (Player's rank doesn't matter)");
+                    System.out.println("2. Ranked Queue (Player's rank matters)");
                     System.out.println("3. Exit");
                     String choice = scanner.nextLine();
                     if(choice.equals("1")){

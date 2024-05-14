@@ -68,7 +68,7 @@ public class Game implements Runnable{
             Player player = pair.getKey();
             try{
                 Connections.sendRequest(pair.getValue(), request);
-                System.out.println("Semding " + request);
+                System.out.println("Sending Request" + request);
             } catch (Exception e){
                 e.printStackTrace();
             }
@@ -126,7 +126,7 @@ public class Game implements Runnable{
     private void askPlayerInfo(Player player,SocketChannel socket){
 
         System.out.println("Sent request to " + player.getName() + " to enter new bet and multiplier");
-    
+        
         try{
         } catch (Exception e){
             e.printStackTrace();
