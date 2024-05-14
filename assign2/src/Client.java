@@ -112,12 +112,44 @@ public class Client {
         try{
             System.out.println("Waiting for game to start");
             String answer = Connections.receiveResponse(this.socket);
-            if (answer.equals("start")){
+            if (answer.equals("startgame")){
                 System.out.println("Game is starting");
+                PlayingGame();
             }
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
+    }
+
+    public void PlayingGame(){
+        try{
+            System.out.println("Game Started");
+            
+            String answerListPlayers = Connections.receiveResponse(this.socket);
+            System.out.println("\nList of Players: \n" + answerListPlayers);
+
+            int rounds = 3;
+            for(int i = 1; i <= rounds; i++){
+                System.out.println("Before");
+                String answerRound = Connections.receiveResponse(this.socket);
+                System.out.println(answerRound);
+                System.out.println("After");
+         
+
+                PlayingRound();
+            }
+
+            while (true){
+
+            }
+            
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void PlayingRound(){
+
     }
     
     public void attemptLogin(Scanner scanner) throws Exception{

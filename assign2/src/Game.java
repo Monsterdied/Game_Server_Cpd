@@ -20,49 +20,69 @@ public class Game implements Runnable{
     
     public double multiplier;
     private Random random;
-    public int rounds = 5;
+    public int rounds = 3;
+    public String requestString = "";
 
     public Game(ArrayList<Pair<Player,SocketChannel>> players, Database database) {
         this.players = players;
         this.random = new Random();
-        //this.gameID = database.getGameID();
     }
 
-    /*public int getGameID() {
-        return this.gameID;
-    }*/
+
     public Date getCrashedTime() {
         return this.crashedTime;
     }
     
     public void run() {
         try{
-            //System.out.println("Starting game " + gameID);
             System.out.println("Players: ");
+
             for (Pair<Player, SocketChannel> pair : players) {
                 Player player = pair.getKey();
-                System.out.println(player.getName() + " " + player.getMoney() + " " + player.getCurrBet() + " " + player.getBetMultiplier());
+                System.out.println("Name: " + player.getName() + ", Money: " + player.getMoney() + ", Bet: " + player.getCurrBet() + ", Bet: " + player.getBetMultiplier());
+                this.requestString += "Name: " + player.getName() + ", Money: " + player.getMoney() + ", Bet: " + player.getCurrBet() + ", Bet: " + player.getBetMultiplier();
+                this.requestString += "\n";
+                Connections.sendRequest(pair.getValue(), "startgame");
+            }
+            
+            AllPlayersRequest(this.requestString);
+
+
+        
+            for (int i = 1; i <= rounds; i++) {
+                this.requestString = "";
+                System.out.println("Round " + i);
+                this.requestString += "Round " + i;
+                AllPlayersRequest(this.requestString + "/" + this.rounds);
+                playRound();   
+                Thread.sleep(500);
             }
 
-            for (int i = 0; i < rounds; i++) {
-                System.out.println("Round " + i);
-                playRound();
-                
-            }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void AllPlayersRequest(String request){
+        for(Pair<Player, SocketChannel> pair : players){
+            Player player = pair.getKey();
+            try{
+                Connections.sendRequest(pair.getValue(), request);
+                System.out.println("Semding " + request);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
     public void playRound() {
         multiplier = 1.0;
 
-        Scanner scanner = new Scanner(System.in);
 
         for(Pair<Player, SocketChannel> pair : players){
             Player player = pair.getKey();
 
-            this.askPlayerInfo(player, pair.getValue().socket() ,scanner);
+            this.askPlayerInfo(player, pair.getValue());
 
 
         }
@@ -103,42 +123,15 @@ public class Game implements Runnable{
         }
     }
 
-    private void askPlayerInfo(Player player,Socket socket, Scanner scanner){
+    private void askPlayerInfo(Player player,SocketChannel socket){
 
         System.out.println("Sent request to " + player.getName() + " to enter new bet and multiplier");
-    /*
+    
         try{
-            Connections.sendRequest(socket, "Enter your new bet: ");
-        }
-        */
-    /*
-        Thread inputThread = new Thread(new Runnable(){
-            @Override
-            public void run(){
-                System.out.println("Enter your new bet: ");
-                double newBet = scanner.nextDouble();
-                System.out.println("Enter your new bet multiplier: ");
-                double newBetMultiplier = scanner.nextDouble();
-
-                player.setCurrBet(newBet);
-                player.setBetMultiplier(newBetMultiplier);
-                
-
-            }
-        });
-
-        inputThread.start();
-
-        try{
-            inputThread.join(10000);
-            if(inputThread.isAlive()){
-                System.out.println("Time's up!");
-                inputThread.interrupt();
-            }
-        } catch (InterruptedException e){
+        } catch (Exception e){
             e.printStackTrace();
         }
-    */
+
     }
 
 

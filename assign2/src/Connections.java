@@ -7,11 +7,11 @@ import java.nio.channels.*;
 public class Connections {
     public static void sendRequest(SocketChannel socketChannel,String request){
         try{
-            System.out.println("Sending request: " + request);
+            //System.out.println("Sending request: " + request);
             OutputStream output = socketChannel.socket().getOutputStream();
             PrintWriter writer = new PrintWriter(output, true);
             writer.println(request);
-            System.out.println("Request sent");
+            //System.out.println("Request sent");
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
@@ -19,15 +19,15 @@ public class Connections {
     public static String hasResponse(SocketChannel socketChannel){
         try{
             InputStream in = socketChannel.socket().getInputStream();
-            System.out.println("Checking for response");
+            //System.out.println("Checking for response");
             if(in.available() > 0){
-                System.out.println("Response found");
+                //System.out.println("Response found");
                 ByteBuffer buffer = ByteBuffer.allocate(1024);
                 socketChannel.read(buffer);
-                System.out.println("Response received");
+                //System.out.println("Response received");
                 return new String(buffer.array()).trim();
             }else{
-                System.out.println("No response found");
+                //System.out.println("No response found");
                 return null;
             }
         }catch(Exception e){
