@@ -61,7 +61,10 @@ public class Game implements Runnable{
 
         for(Pair<Player, SocketChannel> pair : players){
             Player player = pair.getKey();
+
             this.askPlayerInfo(player, pair.getValue().socket() ,scanner);
+
+
         }
 
         while(true){
@@ -100,8 +103,7 @@ public class Game implements Runnable{
         }
     }
 
-
-private void askPlayerInfo(Player player,Socket socket, Scanner scanner){
+    private void askPlayerInfo(Player player,Socket socket, Scanner scanner){
         System.out.println("Player " + player.getName() + ", you have 10 seconds to insert your new bet and bet multiplier.");
 
         Thread inputThread = new Thread(new Runnable(){
@@ -132,5 +134,5 @@ private void askPlayerInfo(Player player,Socket socket, Scanner scanner){
         }
     }
 
-    
+
 }
