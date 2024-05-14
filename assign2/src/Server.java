@@ -170,7 +170,7 @@ public class Server {
                 
                 
 
-                Game game = new Game(players,database);
+                Game game = new Game(players,database,databaseLock,timeLock);
 
                 database.addGame(game);
 

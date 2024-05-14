@@ -22,8 +22,11 @@ public class Game implements Runnable{
     private Random random;
     public int rounds = 3;
     public String requestString = "";
-
-    public Game(ArrayList<Pair<Player,SocketChannel>> players, Database database) {
+    private ReentrantLock databaseLock;
+    private ReentrantLock timeLock;
+    public Game(ArrayList<Pair<Player,SocketChannel>> players, Database database,ReentrantLock databaseLock,ReentrantLock timeLock) {
+        this.databaseLock = databaseLock;
+        this.timeLock = timeLock;
         this.players = players;
         this.random = new Random();
     }
@@ -74,18 +77,45 @@ public class Game implements Runnable{
             }
         }
     }
+        //checks all players response and return a list of string where nulls are not responded players
+    public ArrayList<String> CheckAllPlayersResponses(){
+        ArrayList<String> responses = new ArrayList<String>();
+        for(Pair<Player, SocketChannel> pair : players){
+            Player player = pair.getKey();
+            try{
+                String response = Connections.hasResponse(pair.getValue());
+                responses.add(response);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+    //checks all players response an number defined by tries and sleeps for sleepTime between the tries this function uses CheckAllPlayersResponses
+    /*public void AllPlayersResponseWithTries(int sleepTime,int tries){
+        for(int i = 0 ; i < tries ; i++){
+            ArrayList<String> responses = CheckAllPlayersResponses("bet Ammount");
+            for(int j = 0 ; j < responses.size() ; j++){
+                String response = responses.get(j);
+                if(response == null){
+                    continue;
+                }
+                Player player = players.get(j).getKey();
+                int bet = Integer.parseInt(response);
+                if(player.ge tMoney() < bet){
+                    player.setCurrBet(player.getMoney());
+                }
+                else{
+                    player.setCurrBet(bet);
+                }
+                Thread.sleep(sleepTime);
+            }
+        }
+    }*/
 
     public void playRound() {
         multiplier = 1.0;
+        this.askPlayersInfo();
 
-
-        for(Pair<Player, SocketChannel> pair : players){
-            Player player = pair.getKey();
-
-            this.askPlayerInfo(player, pair.getValue());
-
-
-        }
 
         while(true){
             
@@ -123,9 +153,56 @@ public class Game implements Runnable{
         }
     }
 
-    private void askPlayerInfo(Player player,SocketChannel socket){
+    private void askPlayersInfo(){
+        AllPlayersRequest("bet Ammount");
+        Thread.sleep(10000);//wait 10 secs for the responses
+        ArrayList<String> responses = CheckAllPlayersResponses();
+        for(int j = 0 ; j < responses.size() ; j++){
+            String response = responses.get(j);
+            if(response == null){
+                continue;
+            }
+            Player player = players.get(j).getKey();
+            int bet = Integer.parseInt(response);
+            if(player.getMoney() < bet){
+                player.setCurrBet(player.getMoney());
+            }
+            else{
+                player.setCurrBet(bet);
+            }
+            databaseLock.lock();
+            database.updatePlayer(player);
+            databaseLock.unlock();
+        }
 
-        System.out.println("Sent request to " + player.getName() + " to enter new bet and multiplier");
+        for(Pair<Player, SocketChannel> pair : players){
+            Player player = pair.getKey();
+            if(player.getCurrBet() > 0){
+                Connections.sendRequest(pair.getValue(), "Selected bet: " + player.getCurrBet());
+            }else{
+                Connections.sendRequest(pair.getValue(), "No bet selected.");
+            }
+        }
+        Thread.sleep(10000);// wait 10 secs for the responses
+
+        responses = CheckAllPlayersResponses();
+        for(int j = 0 ; j < responses.size() ; j++){
+            String response = responses.get(j);
+            if(response == null){
+                player.setMultiplier(0.0);
+            }
+            Player player = players.get(j).getKey();
+            int multiplier = integer.parseD(response);
+            if(multiplier < 0.0){
+                player.setMultiplier(0.0);
+            }
+            else{
+                player.setMultiplier(multiplier);
+            }
+            databaseLock.lock();
+            database.updatePlayer(player);
+            databaseLock.unlock();
+        }
         
         try{
         } catch (Exception e){
