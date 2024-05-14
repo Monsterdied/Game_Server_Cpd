@@ -136,7 +136,7 @@ public class Database {
         try {
             checkConnection();
             Statement stmt = this.conn.createStatement();
-            String q1 = "insert into Game (id, players) values (" + ((Integer.valueOf(game.getGameID()) == null) ? "NULL" : game.getGameID() )+ ", " + game.getCrashedTime() + ")";
+            String q1 = "insert into Game (running) values (true)";
             stmt.executeUpdate(q1);
             return true;
         } catch (SQLException e) {
@@ -162,6 +162,7 @@ public class Database {
             throw new Error("Problem", e);
         }
     }
+    
     
     public List<Integer> getGames(){
         checkConnection();

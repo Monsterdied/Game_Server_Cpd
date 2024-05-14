@@ -40,7 +40,6 @@ public class Server {
         this.mode = mode;
         this.threadsGame = Executors.newFixedThreadPool(this.MAX_PARALLEL_GAMES);
         this.threadsPlayers = Executors.newFixedThreadPool(this.MAX_PLAYERS);
-
         
         int i = 1;
         this.databaseLock.lock();
@@ -170,7 +169,15 @@ public class Server {
             }
             if (players != null){
                 System.out.println("Game is starting with: " + players.size());
-                //Game game = new Game(players);
+                
+                
+
+                Game game = new Game(players,database);
+
+                database.addGame(game);
+
+                this.threadsGame.execute(game);
+                
             }
         } catch (IOException e) {
             System.out.println("Server Error: " + e.getMessage());

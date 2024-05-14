@@ -22,22 +22,22 @@ public class Game implements Runnable{
     private Random random;
     public int rounds = 5;
 
-    public Game(int gameID, ArrayList<Pair<Player,SocketChannel>> players) {
-        this.gameID = gameID;
+    public Game(ArrayList<Pair<Player,SocketChannel>> players, Database database) {
         this.players = players;
         this.random = new Random();
+        //this.gameID = database.getGameID();
     }
 
-    public int getGameID() {
+    /*public int getGameID() {
         return this.gameID;
-    }
+    }*/
     public Date getCrashedTime() {
         return this.crashedTime;
     }
     
     public void run() {
         try{
-            System.out.println("Starting game " + gameID);
+            //System.out.println("Starting game " + gameID);
             System.out.println("Players: ");
             for (Pair<Player, SocketChannel> pair : players) {
                 Player player = pair.getKey();
@@ -61,7 +61,7 @@ public class Game implements Runnable{
 
         for(Pair<Player, SocketChannel> pair : players){
             Player player = pair.getKey();
-            this.askPlayerInfo(player, scanner);
+            this.askPlayerInfo(player, pair.getValue().socket() ,scanner);
         }
 
         while(true){
@@ -101,7 +101,7 @@ public class Game implements Runnable{
     }
 
 
-    private void askPlayerInfo(Player player, Scanner scanner){
+private void askPlayerInfo(Player player,Socket socket, Scanner scanner){
         System.out.println("Player " + player.getName() + ", you have 10 seconds to insert your new bet and bet multiplier.");
 
         Thread inputThread = new Thread(new Runnable(){
@@ -131,7 +131,6 @@ public class Game implements Runnable{
             e.printStackTrace();
         }
     }
-    
 
     
 }
