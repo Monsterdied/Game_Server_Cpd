@@ -131,7 +131,9 @@ public class Client {
             System.out.print("Enter your Username: ");
             String username = scanner.nextLine();
                 writer.println(username);
+                System.out.println(username);
                 String answer = reader.readLine();
+                System.out.println("testing");
                 System.out.println(answer);
                 if (answer.equals("username found")){
                     this.username = username;

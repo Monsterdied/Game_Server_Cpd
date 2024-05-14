@@ -113,10 +113,13 @@ public class Server {
             BufferedReader reader = new BufferedReader(new InputStreamReader(input));
             OutputStream output = socket.socket().getOutputStream();
             PrintWriter writer = new PrintWriter(output, true);
-            String choice = reader.readLine();
+            //String choice = reader.readLine();
+            System.out.println("Wainting choice: ");
+            String choice = Connections.receiveResponse(socket);
+            System.out.println("Choice: " + choice);
             switch (choice) {
                 case "login":
-                    player = attemptLogin(reader, writer);
+                    player = attemptLogin(socket);
                     break;
                 case "register":
                     player = attemptRegister(reader, writer);
@@ -183,31 +186,31 @@ public class Server {
             System.out.println("Server Error: " + e.getMessage());
         }
     }
-    Player attemptLogin(BufferedReader reader, PrintWriter writer) throws IOException {
+    Player attemptLogin(SocketChannel socket) throws IOException {
         String username = "";
         Player player = null;
         while (true){
-            username = reader.readLine();
+            username = Connections.receiveResponse(socket);
             this.databaseLock.lock();
             player = this.database.getPlayerByName(username);
             this.databaseLock.unlock();
             if (player != null){
                 System.out.println("username found");
-                writer.println("username found");
+                Connections.sendRequest(socket, "username found");
                 break;
             }
-            writer.println("username not found");
+            Connections.sendRequest(socket, "username not found");
         }
         while (true){
-            String password = reader.readLine();
+            String password = Connections.receiveResponse(socket);
             this.databaseLock.lock();
             String passwordHash = this.database.getPlayerPassword(username);
             this.databaseLock.unlock();
             if (password.equals(passwordHash)){
-                writer.println("password correct");
+                Connections.sendRequest(socket, "password correct");
                 break;
             }
-            writer.println("password incorrect");
+            Connections.sendRequest(socket, "password incorrect");
         }
         return player;
     }
