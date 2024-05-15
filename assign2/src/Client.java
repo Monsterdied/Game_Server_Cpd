@@ -1,6 +1,7 @@
 import java.security.SecureRandom;
 import java.io.*;
 import java.net.*;
+import java.util.concurrent.*;
 import java.util.Scanner;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -121,22 +122,62 @@ public class Client {
             System.out.println(e.getMessage());
         }
     }
+    static int getChoiceWithTimeout(int range, int timeout) {
+        Callable<Integer> k = () -> new Scanner(System.in).nextInt();
+        Long start = System.currentTimeMillis();
+        int choice = 0;
+        boolean valid;
+        ExecutorService l = Executors.newFixedThreadPool(1);
+        Future<Integer> g;
+        System.out.println("Enter your choice in "+timeout+" seconds :");
+        g = l.submit(k);
+        done: while (System.currentTimeMillis() - start < timeout * 1000) {
+            do {
+                valid = true;
+                if (g.isDone()) {
+                    try {
+                        choice = g.get();
+                        if (choice >= 0 && choice <= range) {
+                            break done;
+                        } else {
+                            throw new IllegalArgumentException();
+                        }
+                    } catch (InterruptedException | ExecutionException | IllegalArgumentException e) {
+                        System.out.println("Wrong choice, you have to pick an integer between 0 - " + range);
+                        g = l.submit(k);
+                        valid = false;
+                    }
+                }
+            } while (!valid);
+        }
+
+        g.cancel(true);
+        return choice;
+    }
+
     public void PlayRound(){
         try{
             System.out.println("Playing Round");
             String answer = Connections.receiveResponse(this.socket);
             System.out.println("Server: " + answer);
-            Scanner scanner = new Scanner(System.in);
-            System.out.println("Enter your bet: ");
-            String bet = scanner.nextLine();
-            Connections.sendRequest(this.socket,bet);
-            System.out.println("Bet Sent");
+            System.out.print("Enter your bet: ");
+            int playerBet = getChoiceWithTimeout(1000000, 10);
+            System.out.println("Player Bet: " + playerBet);
+            Connections.sendRequest(this.socket,String.valueOf(playerBet));
+            System.out.println("Bet Sent Waiting For Multiplier response");
             answer = Connections.receiveResponse(this.socket);
-            System.out.println("Server: " + answer);
-            String multiplier = scanner.nextLine();
-            Connections.sendRequest(this.socket,multiplier);
-            answer = Connections.receiveResponse(this.socket);
-            System.out.println("Server: " + answer);
+            if(answer.startsWith("Selected bet: ")){
+                System.out.print("Server: " + answer);
+                int playerMultiplier = getChoiceWithTimeout(1000000, 10);
+                System.out.println("Player Multiplier: " + playerMultiplier);
+                Connections.sendRequest(this.socket,String.valueOf(playerMultiplier));
+                answer = Connections.receiveResponse(this.socket);
+                System.out.println("Server: " + answer);
+            }else{
+                System.out.println("Server: " + answer);
+                System.out.println("Invalid Bet, please try again Next Round");
+            }
+
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
@@ -150,10 +191,8 @@ public class Client {
 
             int rounds = 3;
             for(int i = 1; i <= rounds; i++){
-                System.out.println("Before");
                 String answerRound = Connections.receiveResponse(this.socket);
                 System.out.println(answerRound);
-                System.out.println("After");
                 PlayRound();
             }
 

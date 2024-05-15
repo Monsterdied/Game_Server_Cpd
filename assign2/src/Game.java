@@ -40,6 +40,13 @@ public class Game implements Runnable{
     
     public void run() {
         try{
+            for(Pair<Player, SocketChannel> pair : players){
+                Player player = pair.getKey();
+                player.setMoney(player.getMoney() + 30);//add 30 to the player money
+                databaseLock.lock();
+                database.updatePlayer(player);
+                databaseLock.unlock();
+            }
             System.out.println("Players: ");
 
             for (Pair<Player, SocketChannel> pair : players) {
@@ -163,30 +170,25 @@ public class Game implements Runnable{
             ArrayList<String> responses = CheckAllPlayersResponses();
             for(int j = 0 ; j < responses.size() ; j++){
                 String response = responses.get(j);
+                var pair = players.get(j);
                 Player player = players.get(j).getKey();
                 if(response == null){
                     player.setCurrBet(0);
+                    Connections.sendRequest(pair.getValue(), "No bet selected.");
                 }else{                                        
                     int bet = Integer.parseInt(response);
                     if(player.getMoney() < bet){
-                        player.setCurrBet(player.getMoney());
+                        player.setCurrBet(0);
+                        Connections.sendRequest(pair.getValue(), "Not enougth money to bet: " + bet+" User has: "+player.getMoney()+" money.");
                     }
                     else{
                         player.setCurrBet(bet);
+                        Connections.sendRequest(pair.getValue(), "Selected bet: " + player.getCurrBet());
                     }
                 }
                 databaseLock.lock();
                 database.updatePlayer(player);
                 databaseLock.unlock();
-            }
-
-            for(Pair<Player, SocketChannel> pair : players){
-                Player player = pair.getKey();
-                if(player.getCurrBet() > 0){
-                    Connections.sendRequest(pair.getValue(), "Selected bet: " + player.getCurrBet());
-                }else{
-                    Connections.sendRequest(pair.getValue(), "No bet selected.");
-                }
             }
             Thread.sleep(10000);// wait 10 secs for the responses
 
@@ -210,6 +212,7 @@ public class Game implements Runnable{
                 database.updatePlayer(player);
                 databaseLock.unlock();
             }
+            AllPlayersRequest("Round about to begin");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
