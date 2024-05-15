@@ -20,7 +20,7 @@ public class Client {
         int port = Integer.parseInt(args[1]);
         while (true){
             client.connect(hostname, port);
-            System.out.println("Connection Lost, retrying in "+ client.TimeRetry + "seconds");
+            System.out.println("Connection Lost, retrying in "+ client.TimeRetry + " seconds");
             try {
                 Thread.sleep(client.TimeRetry * 1000);
             } catch (InterruptedException e) {
@@ -121,7 +121,26 @@ public class Client {
             System.out.println(e.getMessage());
         }
     }
-
+    public void PlayRound(){
+        try{
+            System.out.println("Playing Round");
+            String answer = Connections.receiveResponse(this.socket);
+            System.out.println("Server: " + answer);
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Enter your bet: ");
+            String bet = scanner.nextLine();
+            Connections.sendRequest(this.socket,bet);
+            System.out.println("Bet Sent");
+            answer = Connections.receiveResponse(this.socket);
+            System.out.println("Server: " + answer);
+            String multiplier = scanner.nextLine();
+            Connections.sendRequest(this.socket,multiplier);
+            answer = Connections.receiveResponse(this.socket);
+            System.out.println("Server: " + answer);
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
     public void PlayingGame(){
         try{
             System.out.println("Game Started");
@@ -135,9 +154,7 @@ public class Client {
                 String answerRound = Connections.receiveResponse(this.socket);
                 System.out.println(answerRound);
                 System.out.println("After");
-         
-
-                PlayingRound();
+                PlayRound();
             }
 
             while (true){
@@ -147,10 +164,6 @@ public class Client {
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
-    }
-
-    public void PlayingRound(){
-
     }
     
     public void attemptLogin(Scanner scanner) throws Exception{

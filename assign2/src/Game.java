@@ -24,7 +24,9 @@ public class Game implements Runnable{
     public String requestString = "";
     private ReentrantLock databaseLock;
     private ReentrantLock timeLock;
+    private Database database;
     public Game(ArrayList<Pair<Player,SocketChannel>> players, Database database,ReentrantLock databaseLock,ReentrantLock timeLock) {
+        this.database = database;
         this.databaseLock = databaseLock;
         this.timeLock = timeLock;
         this.players = players;
@@ -89,6 +91,7 @@ public class Game implements Runnable{
                 e.printStackTrace();
             }
         }
+        return responses;
     }
     //checks all players response an number defined by tries and sleeps for sleepTime between the tries this function uses CheckAllPlayersResponses
     /*public void AllPlayersResponseWithTries(int sleepTime,int tries){
@@ -154,58 +157,60 @@ public class Game implements Runnable{
     }
 
     private void askPlayersInfo(){
-        AllPlayersRequest("bet Ammount");
-        Thread.sleep(10000);//wait 10 secs for the responses
-        ArrayList<String> responses = CheckAllPlayersResponses();
-        for(int j = 0 ; j < responses.size() ; j++){
-            String response = responses.get(j);
-            if(response == null){
-                continue;
-            }
-            Player player = players.get(j).getKey();
-            int bet = Integer.parseInt(response);
-            if(player.getMoney() < bet){
-                player.setCurrBet(player.getMoney());
-            }
-            else{
-                player.setCurrBet(bet);
-            }
-            databaseLock.lock();
-            database.updatePlayer(player);
-            databaseLock.unlock();
-        }
-
-        for(Pair<Player, SocketChannel> pair : players){
-            Player player = pair.getKey();
-            if(player.getCurrBet() > 0){
-                Connections.sendRequest(pair.getValue(), "Selected bet: " + player.getCurrBet());
-            }else{
-                Connections.sendRequest(pair.getValue(), "No bet selected.");
-            }
-        }
-        Thread.sleep(10000);// wait 10 secs for the responses
-
-        responses = CheckAllPlayersResponses();
-        for(int j = 0 ; j < responses.size() ; j++){
-            String response = responses.get(j);
-            if(response == null){
-                player.setMultiplier(0.0);
-            }
-            Player player = players.get(j).getKey();
-            int multiplier = integer.parseD(response);
-            if(multiplier < 0.0){
-                player.setMultiplier(0.0);
-            }
-            else{
-                player.setMultiplier(multiplier);
-            }
-            databaseLock.lock();
-            database.updatePlayer(player);
-            databaseLock.unlock();
-        }
-        
         try{
-        } catch (Exception e){
+            AllPlayersRequest("bet Ammount");
+            Thread.sleep(10000);//wait 10 secs for the responses
+            ArrayList<String> responses = CheckAllPlayersResponses();
+            for(int j = 0 ; j < responses.size() ; j++){
+                String response = responses.get(j);
+                Player player = players.get(j).getKey();
+                if(response == null){
+                    player.setCurrBet(0);
+                }else{                                        
+                    int bet = Integer.parseInt(response);
+                    if(player.getMoney() < bet){
+                        player.setCurrBet(player.getMoney());
+                    }
+                    else{
+                        player.setCurrBet(bet);
+                    }
+                }
+                databaseLock.lock();
+                database.updatePlayer(player);
+                databaseLock.unlock();
+            }
+
+            for(Pair<Player, SocketChannel> pair : players){
+                Player player = pair.getKey();
+                if(player.getCurrBet() > 0){
+                    Connections.sendRequest(pair.getValue(), "Selected bet: " + player.getCurrBet());
+                }else{
+                    Connections.sendRequest(pair.getValue(), "No bet selected.");
+                }
+            }
+            Thread.sleep(10000);// wait 10 secs for the responses
+
+            responses = CheckAllPlayersResponses();
+            for(int j = 0 ; j < responses.size() ; j++){
+                String response = responses.get(j);
+                Player player = players.get(j).getKey();
+                if(response == null){
+                    player.setBetMultiplier(0.0);
+                }else{
+                    int multiplier = Integer.parseInt(response);
+                    if(multiplier < 0.0){
+                        player.setBetMultiplier(0.0);
+                    }
+                    else{
+                        player.setBetMultiplier(multiplier);
+                    }
+                }
+
+                databaseLock.lock();
+                database.updatePlayer(player);
+                databaseLock.unlock();
+            }
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
