@@ -199,7 +199,7 @@ public class Game implements Runnable{
                 if(response == null){
                     player.setBetMultiplier(0.0);
                 }else{
-                    int multiplier = Integer.parseInt(response);
+                    Double multiplier = Double.parseDouble(response);
                     if(multiplier < 0.0){
                         player.setBetMultiplier(0.0);
                     }

@@ -122,13 +122,13 @@ public class Client {
             System.out.println(e.getMessage());
         }
     }
-    static int getChoiceWithTimeout(int range, int timeout) {
-        Callable<Integer> k = () -> new Scanner(System.in).nextInt();
+    static Double getChoiceWithTimeout(int range, int timeout) {
+        Callable<Double> k = () -> new Scanner(System.in).nextDouble();
         Long start = System.currentTimeMillis();
-        int choice = 0;
+        Double choice = 0.0;
         boolean valid;
         ExecutorService l = Executors.newFixedThreadPool(1);
-        Future<Integer> g;
+        Future<Double> g;
         g = l.submit(k);
         done: while (System.currentTimeMillis() - start < timeout * 1000) {
             do {
@@ -160,7 +160,7 @@ public class Client {
             String answer = Connections.receiveResponse(this.socket);
             System.out.println("Server: " + answer);
             System.out.print("Enter your bet: ");
-            int playerBet = getChoiceWithTimeout(1000000, 10);
+            int playerBet = getChoiceWithTimeout(1000000, 10).intValue();
             System.out.println("Player Bet: " + playerBet);
             Connections.sendRequest(this.socket,String.valueOf(playerBet));
             System.out.println("Bet Sent Waiting For Multiplier response");
@@ -168,7 +168,7 @@ public class Client {
             if(answer.startsWith("Selected bet: ")){
                 System.out.println("Server: " + answer);
                 System.out.print("Select multiplier: ");
-                int playerMultiplier = getChoiceWithTimeout(1000000, 10);
+                double playerMultiplier = getChoiceWithTimeout(1000000, 10);
                 System.out.println("Player Multiplier: " + playerMultiplier);
                 Connections.sendRequest(this.socket,String.valueOf(playerMultiplier));
                 answer = Connections.receiveResponse(this.socket);
