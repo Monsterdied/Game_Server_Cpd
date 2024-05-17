@@ -1,10 +1,12 @@
 import java.security.SecureRandom;
 import java.io.*;
 import java.net.*;
+import java.time.Instant;
 import java.util.concurrent.*;
 import java.util.Scanner;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.nio.channels.SocketChannel;
 public class Client {
     SocketChannel socket; 
@@ -153,8 +155,8 @@ public class Client {
         g.cancel(true);
         return choice;
     }
-    public handleBetAndMultiplierIo(){
-                try{
+    public void handleBetAndMultiplierIo(){
+        try{
             System.out.println("Playing Round");
             String answer = Connections.receiveResponse(this.socket);
             System.out.println("Server: " + answer);
@@ -183,7 +185,80 @@ public class Client {
     }
     public void PlayRound(){
         handleBetAndMultiplierIo();
-        
+        System.out.println("Round is begining Client Status");
+        HandleMidRound();
+        HandleEndRound();
+
+    }
+    public void HandleEndRound(){
+        String answer = Connections.receiveResponse(this.socket);
+        System.out.println(answer);
+        }
+
+    public void HandleMidRound() {
+        String startString = Connections.receiveResponse(this.socket);
+        System.out.println(startString);
+        long startTime =Long.parseLong(startString);
+        long timeSinceStart = Instant.now().getEpochSecond() - startTime;
+        System.out.println("Time since start: " + timeSinceStart);
+        Thread.Builder builder = Thread.ofVirtual();
+        AtomicReference<String> input = new AtomicReference<>("Not Y");
+        Thread t = builder.start(() -> readInput(input));
+        boolean bailed = false;
+        while (true) {
+            String response = Connections.hasResponse(this.socket);
+            if (response != null) {
+                System.out.println("");
+                if(response.equals("Crashed!!!")){
+                    System.out.println("crashed");
+                    break;
+                }else if(response.startsWith("Won Bet: ")){
+                    System.out.println(response);
+                }else if(response.startsWith("Lost Bet,")){
+                    System.out.println(response);
+                }else if(response.startsWith("Round Ended")){
+                    System.out.println(response);
+                    break;// TODO ONLY BREAK IF ROUND ENDED
+                }
+            }
+            timeSinceStart = Instant.now().getEpochSecond() - startTime;
+            double currMultiplier = timeSinceStart*0.2 + 1;
+            
+            // Print status update with backspace to overwrite previous characters
+            if(!bailed){
+                System.out.print("\r" +" "+ String.format("%,.2f", currMultiplier) + "Select Y to Bail:");
+            }else{
+                System.out.print("\r" +" "+ String.format("%,.2f", currMultiplier) + "Bailed");
+            }
+            // Read a single character
+            if(input.get().equals("Y") && !bailed){
+                bailed = true;
+                Connections.sendRequest(this.socket,"" + currMultiplier);
+            }
+            try {
+                Thread.sleep(400); // Sleep for 1 second
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        t.interrupt();
+        System.out.println(); // Print newline after finishing
+    }
+    private static void readInput(AtomicReference<String> message) {
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            String input = scanner.nextLine();
+            if (!input.isEmpty()) {
+            // Update message based on user input (replace with your logic)
+                if (input.equals("Y")) {
+                    System.out.println("You pressed Y");
+                    message.set("Y");
+                    break;
+                }else {
+                    System.out.println("Invalid input");
+                }
+            }
+        }
     }
     public void PlayingGame(){
         try{

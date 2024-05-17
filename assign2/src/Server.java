@@ -36,6 +36,7 @@ public class Server {
     public Server(int port, int mode) throws IOException{
         this.queueLock = new ReentrantLock();
         this.databaseLock = new ReentrantLock();
+        this.timeLock = new ReentrantLock();
         this.port = port;
         this.mode = mode;
         this.threadsGame = Executors.newFixedThreadPool(this.MAX_PARALLEL_GAMES);

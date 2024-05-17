@@ -130,11 +130,15 @@ public class Game implements Runnable{
         this.crashedTime = Instant.now().getEpochSecond() + (long)(multiplier * 5);//0.5 seconds per 0.1 multiplier
         long currentTime = Instant.now().getEpochSecond();
         timeLock.unlock();
+        AllPlayersRequest(""+currentTime);
+        long startTime = currentTime;
         boolean crashed = false;
         while(currentTime < this.crashedTime + 2){//add 2 seconds to the time to make sure request with delay are processed
+            System.out.println("Current Time: " +  String.format("%.1f", (currentTime - startTime)*0.2 + 1) + " Crashed Time: " + this.crashedTime);
             HandlePlayerUpdateOfBets(multiplier);
             if(currentTime >= this.crashedTime && !crashed){
                 crashed = true;
+                System.out.println("Crashed!!!");
                 AllPlayersRequest("Crashed!!!");
             }
             try{
@@ -168,6 +172,7 @@ public class Game implements Runnable{
             System.out.println("Player " + player.getName() + " has " + player.getMoney() + " money");
             
         }
+        System.out.println("Resume: " + resume);
         AllPlayersRequest(resume);
     }
     private void HandlePlayerUpdateOfBets(double crachedMultiplier){
@@ -180,6 +185,7 @@ public class Game implements Runnable{
                 continue;
             }else{                                        
                 Double multiplier = Double.parseDouble(response);
+                System.out.println("Player " + player.getName() + " updated bet multiplier to: " + multiplier);
                 if(crachedMultiplier >= multiplier){
                     player.setBetMultiplier(multiplier);
                     Connections.sendRequest(pair.getValue(), "Won Bet: " + player.getCurrBet() * player.getBetMultiplier());
