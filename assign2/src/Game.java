@@ -2,6 +2,7 @@ import java.util.List;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.time.*; 
 import java.util.Date;
 import java.nio.channels.SocketChannel;
 import java.util.List;
@@ -15,7 +16,7 @@ public class Game implements Runnable{
 
     private ArrayList<Pair<Player,SocketChannel>> players;
     private Integer gameID;
-    private Date crashedTime = null;
+    private Long crashedTime = null;
 
     
     public double multiplier;
@@ -34,7 +35,7 @@ public class Game implements Runnable{
     }
 
 
-    public Date getCrashedTime() {
+    public Long getCrashedTime() {
         return this.crashedTime;
     }
     
@@ -123,12 +124,79 @@ public class Game implements Runnable{
     }*/
 
     public void playRound() {
-        multiplier = 1.0;
         this.askPlayersInfo();
+        double multiplier = this.getMultiplier();
+        timeLock.lock();
+        this.crashedTime = Instant.now().getEpochSecond() + (long)(multiplier * 5);//0.5 seconds per 0.1 multiplier
+        long currentTime = Instant.now().getEpochSecond();
+        timeLock.unlock();
+        boolean crashed = false;
+        while(currentTime < this.crashedTime + 2){//add 2 seconds to the time to make sure request with delay are processed
+            HandlePlayerUpdateOfBets(multiplier);
+            if(currentTime >= this.crashedTime && !crashed){
+                crashed = true;
+                AllPlayersRequest("Crashed!!!");
+            }
+            try{
+                Thread.sleep(300);
+            } catch (InterruptedException e){
+                e.printStackTrace();
+            }
+            timeLock.lock();
+            currentTime = Instant.now().getEpochSecond();
+            timeLock.unlock();
+        }
 
-
-        while(true){
+        String resume = "";
+        for(Pair<Player, SocketChannel> pair : players){
             
+            Player player = pair.getKey();
+            String response = "";
+            if(player.getBetMultiplier()>multiplier){
+                response +=player.getName() + " bet " + player.getCurrBet() + "with multiplier " + player.getBetMultiplier() + " but the multiplier was " + multiplier + "\n";
+                response += player.getName() + " lost " + player.getCurrBet();
+                System.out.println(response);
+                player.setMoney(player.getMoney() - player.getCurrBet());
+            }
+            else if(player.getBetMultiplier()<=multiplier){
+                response +=player.getName() + " bet " + player.getCurrBet() + " with multiplier " + player.getBetMultiplier() + "\n";
+                response +=player.getName() + " won " + player.getCurrBet() * player.getBetMultiplier();
+                System.out.println(response);
+                player.setMoney(player.getBetMultiplier() * player.getCurrBet() + player.getMoney());
+            }
+            resume += response + "\n";
+            System.out.println("Player " + player.getName() + " has " + player.getMoney() + " money");
+            
+        }
+        AllPlayersRequest(resume);
+    }
+    private void HandlePlayerUpdateOfBets(double crachedMultiplier){
+        ArrayList<String> responses = CheckAllPlayersResponses();
+        for(int j = 0 ; j < responses.size() ; j++){
+            String response = responses.get(j);
+            var pair = players.get(j);
+            Player player = players.get(j).getKey();
+            if(response == null){
+                continue;
+            }else{                                        
+                Double multiplier = Double.parseDouble(response);
+                if(crachedMultiplier >= multiplier){
+                    player.setBetMultiplier(multiplier);
+                    Connections.sendRequest(pair.getValue(), "Won Bet: " + player.getCurrBet() * player.getBetMultiplier());
+                }
+                else{
+                    player.setBetMultiplier(multiplier);
+                    Connections.sendRequest(pair.getValue(), "Lost Bet, You lost: " + player.getCurrBet() + " money.");
+                }
+            }
+            databaseLock.lock();
+            database.updatePlayer(player);
+            databaseLock.unlock();
+        }
+    }
+    private double getMultiplier(){
+        double multiplier = 1.0;
+        while(true){    
             multiplier += 0.1;
             System.out.println("Multiplier: " + String.format("%.1f", multiplier));
             
@@ -136,33 +204,10 @@ public class Game implements Runnable{
                 System.out.println("Crashed!");
                 break;
             }
-
-            try{
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
-        
-        for(Pair<Player, SocketChannel> pair : players){
-            
-            Player player = pair.getKey();
-
-            if(player.getBetMultiplier()>multiplier){
-                System.out.println(player.getName() + " bet " + player.getCurrBet() + "with multiplier " + player.getBetMultiplier() + " but the multiplier was " + multiplier);
-                System.out.println(player.getName() + " lost " + player.getCurrBet());
-                player.setMoney(player.getMoney() - player.getCurrBet());
-            }
-            else if(player.getBetMultiplier()<=multiplier){
-                System.out.println(player.getName() + " bet " + player.getCurrBet() + " with multiplier " + player.getBetMultiplier());
-                System.out.println(player.getName() + " won " + player.getCurrBet() * player.getBetMultiplier());
-                player.setMoney(player.getBetMultiplier() * player.getCurrBet() + player.getMoney());
-            }
-            System.out.println("Player " + player.getName() + " has " + player.getMoney() + " money");
-            
-        }
+        System.out.println("Multiplier: " + String.format("%.1f", multiplier));
+        return multiplier;
     }
-
     private void askPlayersInfo(){
         try{
             AllPlayersRequest("bet Ammount");

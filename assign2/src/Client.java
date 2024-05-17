@@ -153,9 +153,8 @@ public class Client {
         g.cancel(true);
         return choice;
     }
-
-    public void PlayRound(){
-        try{
+    public handleBetAndMultiplierIo(){
+                try{
             System.out.println("Playing Round");
             String answer = Connections.receiveResponse(this.socket);
             System.out.println("Server: " + answer);
@@ -181,6 +180,10 @@ public class Client {
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
+    }
+    public void PlayRound(){
+        handleBetAndMultiplierIo();
+        
     }
     public void PlayingGame(){
         try{
