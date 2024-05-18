@@ -65,7 +65,7 @@ public class Queue{
     }
     public ArrayList<Pair<Player, SocketChannel>> getCasualGamePlayers() {
         // #TODO need to make sure that the players are still there make a ping function
-        System.out.println("Casual Queue Size: " + this.casualQueue.size());
+        System.out.println("Current Casual Queue Size: " + this.casualQueue.size());
         if(this.casualQueue.size() >= this.players_per_game) {
             System.out.println("Casual Game Started");
             ArrayList<Pair<Player, SocketChannel>> players = new ArrayList<Pair<Player, SocketChannel>>();
@@ -74,6 +74,13 @@ public class Queue{
             }
             this.casualQueue = new ArrayList<Pair<Player, SocketChannel>>();
             return players;
+        }
+        else{
+            System.out.println("\nCasual Game is not ready yet. Needs " + (this.players_per_game-this.casualQueue.size()) + " more players");
+            System.out.println("\nCurrent Players in the Casual Queue:");
+            for (int i = 0; i < this.casualQueue.size(); i++){
+                System.out.println("Player " + this.casualQueue.get(i).getKey().getName() + " with money " + this.casualQueue.get(i).getKey().getMoney());
+            }
         }
         return null;
     }

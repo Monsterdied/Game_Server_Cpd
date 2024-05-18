@@ -47,7 +47,7 @@ public class Game implements Runnable{
     public void run() {
         try{
 
-            System.out.println("Players: ");
+            System.out.println("\n Players in this game: ");
 
             for (Pair<Player, SocketChannel> pair : players) {
                 Player player = pair.getKey();
@@ -59,7 +59,6 @@ public class Game implements Runnable{
                 database.updatePlayer(player);
                 databaseLock.unlock();
                 // print players information
-                System.out.println("Name: " + player.getName() + ", Money: " + player.getMoney() + ", Bet: " + player.getCurrBet() + ", Bet: " + player.getBetMultiplier());
                 this.requestString += "Name: " + player.getName() + ", Money: " + player.getMoney() + ", Bet: " + player.getCurrBet() + ", Bet: " + player.getBetMultiplier();
                 this.requestString += "\n";
                 Connections.sendRequest(pair.getValue(), "startgame");
@@ -96,7 +95,7 @@ public class Game implements Runnable{
             Player player = pair.getKey();
             try{
                 Connections.sendRequest(pair.getValue(), request);
-                System.out.println("Sending Request" + request);
+                System.out.println("Request sent to player " + player.getName() + " with request: \n" + request);
             } catch (Exception e){
                 e.printStackTrace();
             }
@@ -150,7 +149,7 @@ public class Game implements Runnable{
         long startTime = currentTime;
         boolean crashed = false;
         while(currentTime < this.crashedTime + 2){//add 2 seconds to the time to make sure request with delay are processed
-            System.out.println("Current Time: " +  String.format("%.1f", (currentTime - startTime)*0.2) + " Crashed Time: " + this.crashedTime);
+            System.out.println("Current Multiplier: " +  String.format("%.1f", (currentTime - startTime)*0.2));
             HandlePlayerUpdateOfBets(multiplier);
             if(currentTime >= this.crashedTime && !crashed){
                 crashed = true;
@@ -169,11 +168,11 @@ public class Game implements Runnable{
 
         String resume = "";
         for(Pair<Player, SocketChannel> pair : players){
-            
+            System.out.println("\n");
             Player player = pair.getKey();
             String response = "";
             if(player.getBetMultiplier()>multiplier){
-                response +=player.getName() + " bet " + player.getCurrBet() + "with multiplier " + player.getBetMultiplier() + " but the multiplier was " + multiplier + "\n";
+                response +=player.getName() + " bet " + player.getCurrBet() + " with multiplier " + player.getBetMultiplier() + " but the multiplier was " + multiplier + "\n";
                 response += player.getName() + " lost " + player.getCurrBet();
                 System.out.println(response);
                 player.setMoney(player.getMoney() - player.getCurrBet());
@@ -185,10 +184,9 @@ public class Game implements Runnable{
                 player.setMoney(player.getBetMultiplier() * player.getCurrBet() + player.getMoney());
             }
             resume += response + "\n";
-            System.out.println("Player " + player.getName() + " has " + player.getMoney() + " money");
+            System.out.println("Player " + player.getName() + " has " + player.getMoney() + " money\n");
             
         }
-        System.out.println("Resume: " + resume);
         AllPlayersRequest(resume);
     }
     private void HandlePlayerUpdateOfBets(double crachedMultiplier){

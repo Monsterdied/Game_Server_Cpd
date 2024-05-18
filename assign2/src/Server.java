@@ -68,15 +68,13 @@ public class Server {
 
         this.serverSocket = ServerSocketChannel.open();
         serverSocket.bind(new InetSocketAddress(this.port));
-        System.out.println("Server started on port " + this.port + " with mode " + this.mode);
+        System.out.println("\nServer started on port " + this.port + " with mode " + this.mode + "\n");
 
     }
 
     //Run Server
     public void run() throws IOException {
-        System.out.println("Waiting for connections...");
         Runnable task = () -> {
-            System.out.println("Waiting for connections...");
             try{
                 while(true) {
                     System.out.println("Waiting for connections...");
@@ -92,7 +90,6 @@ public class Server {
         Thread t = builder.start(task);
     }
     public void acceptConnections() throws IOException {
-            System.out.println("New connection from ");
             socket = this.serverSocket.accept();
             Runnable client = () -> {
                 try {
@@ -108,12 +105,11 @@ public class Server {
     public void handleClient() throws IOException {
         try {
             Player player = null;
-            System.out.println("Handling client...");
+            System.out.println("\nNew Connection Received, Handling client...");
             socket.socket().setSoTimeout(this.TIMEOUT);
-            //String choice = reader.readLine();
-            System.out.println("Wainting choice: ");
+            System.out.println("Waiting for the Client Choice: ");
             String choice = Connections.receiveResponse(socket);
-            System.out.println("Choice: " + choice);
+            System.out.println("Received Choice from the Client. The selected Choice was: " + choice + "!\n");
             switch (choice) {
                 case "login":
                     player = attemptLogin(socket);
@@ -130,23 +126,21 @@ public class Server {
             }
             if (player != null){
                 if (player.getCurrentGame() == -1){
-                    System.out.println("Handle new queue request");
+                    System.out.println("\nPlayer "+ player.getName()  +" is choosing the type of queue!");
                     this.queueLock.lock();
                     boolean inQueue = this.queue.CheckIfPlayerInQueueAndUpdate(player, socket);
                     this.queueLock.unlock();
                     if (!inQueue){
-                        System.out.println("Player " + player.getName() + " is not in the queue");
                         Connections.sendRequest(socket, "Type of game:");
                         AddToqueue( player, socket);
                     }else{
-                        System.out.println("Player " + player.getName() + " is in the queue");
+                        System.out.println("Player " + player.getName() + " is already in the queue");
                         Connections.sendRequest(socket, "Player Reconnected to queue");
                     }
                 } else {
                     System.out.println("Handle reconnection");
                     System.out.println("Player " + player.getName() + " is in the lobby");
                 }
-                System.out.println("Player " + player.getName() + " connected");
             }
         } catch (IOException e) {
             System.out.println("Server Error: " + e.getMessage());
@@ -154,9 +148,8 @@ public class Server {
     }
     void AddToqueue(Player player, SocketChannel socket) {
         ArrayList<Pair<Player, SocketChannel>> players = null;
-            System.out.println("Adding player to queue");
             String reading = Connections.receiveResponse(socket);
-            System.out.println("Reading :" + reading);
+            System.out.println("\nThe Player " + player.getName() + " choose the " + reading + " queue!");
             switch (reading){
                 case "RANKED":
                     this.queueLock.lock();
@@ -165,7 +158,7 @@ public class Server {
                     this.queueLock.unlock();
                     break;
                 case "NORMAL":
-                    System.out.println("Adding player to casual queue");
+                    System.out.println("\nAdding Player " + player.getName() + " to normal queue!");
                     this.queueLock.lock();
                     this.queue.AddPlayerToCasual(player, socket);
                     players = queue.getCasualGamePlayers();
@@ -176,7 +169,10 @@ public class Server {
                     break;
             }
             if (players != null){
-                System.out.println("Game is starting with: " + players.size());
+                System.out.println("Game is starting with " + players.size() + " players:");
+                for (Pair<Player, SocketChannel> p : players){
+                    System.out.println("Player " + p.getKey().getName() + " with money " + p.getKey().getMoney() + " !");
+                }
                 this.queueLock.lock();
                 Game game = new Game(players,database,databaseLock,timeLock);
                 this.threadsGame.execute(game);
@@ -197,7 +193,7 @@ public class Server {
             player = this.database.getPlayerByName(username);
             this.databaseLock.unlock();
             if (player != null){
-                System.out.println("username found");
+                System.out.println("\nClient's Username was found in the database: " + username + "!\n");
                 Connections.sendRequest(socket, "username found");
                 break;
             }
@@ -212,6 +208,7 @@ public class Server {
                 return null;
             }
             if (password.equals(passwordHash)){
+                System.out.println("Client's Password was correct!\n");
                 Connections.sendRequest(socket, "password correct");
                 break;
             }
@@ -229,12 +226,14 @@ public class Server {
             this.databaseLock.unlock();
             if (Objects.isNull(player)){
                 Connections.sendRequest(socket, "username not found");
+                System.out.println("\nClient defined it's new username as: " + username + "!\n");
                 break;
             }
             Connections.sendRequest(socket,"username found");
         }
         player = new Player(1, username, 1000.0, -1, 0.0, 1.0);
         String password = Connections.receiveResponse(socket);
+        System.out.println("Client defined it's new password!\n");
         this.databaseLock.lock();
         this.database.createPlayer(player, password);
         this.databaseLock.unlock();

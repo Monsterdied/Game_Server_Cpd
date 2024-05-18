@@ -28,9 +28,9 @@ INSERT INTO Player (name, password) VALUES ('Bob', 'password2');
 INSERT INTO Player (name, password) VALUES ('Charlie', 'password3');
 
 -- Inserting sample games
-INSERT INTO Game (running) VALUES (FALSE);
-INSERT INTO Game (running) VALUES (FALSE);
-INSERT INTO Game (running) VALUES (FALSE);
+INSERT INTO Game (running) VALUES (0);
+INSERT INTO Game (running) VALUES (0);
+INSERT INTO Game (running) VALUES (0);
 
 -- Assigning players to games
 UPDATE Player SET current_game = 1 WHERE name = 'Alice';

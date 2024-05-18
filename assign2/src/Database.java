@@ -14,10 +14,6 @@ public class Database {
                 Statement stmt = this.conn.createStatement();
                 System.out.println("Connection to SQLite has been established.");
                 String q1 = "select * from Player";
-                ResultSet rs = stmt.executeQuery(q1);
-                while (rs.next()) {
-                    System.out.println(rs.getInt("id") + ", " + rs.getString("name") + ", " + rs.getInt("money") + ", " + rs.getInt("current_game") + ", " + rs.getInt("curr_bet"));
-                }
             } catch (SQLException e) {
             throw new Error("Problem", e);
         }

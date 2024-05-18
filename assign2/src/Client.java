@@ -46,7 +46,6 @@ public class Client {
             this.socket = SocketChannel.open();
             socket.connect(new InetSocketAddress(hostname, port));
             this.TimeRetry = 5;
-            System.out.println("Connected to the server. !!!!!!!!!!! " + this.loggedIn);
             if (!this.loggedIn){
                 
                 this.welcomeMenu();
@@ -95,9 +94,9 @@ public class Client {
     }
     public void welcomeMenu(){
             Scanner scanner = new Scanner(System.in); 
-            System.out.println("Connected to the server.");
+            System.out.println("Connected to the server.\n");
             System.out.println("Welcome to the Crash Game!");
-            System.out.println("Do u wish to login or register?");
+            System.out.println("Do you want to Login or Register?");
             System.out.println("1. Login");
             System.out.println("2. Register");
             System.out.println("3. Exit");
@@ -130,7 +129,7 @@ public class Client {
             System.out.println("Waiting for game to start");
             String answer = Connections.receiveResponse(this.socket);
             if (answer.equals("startgame")){
-                System.out.println("Game is starting");
+                System.out.println("Game is starting now!");
                 PlayingGame();
             }
         }catch(Exception e){
@@ -300,27 +299,28 @@ public class Client {
     }
     
     public void attemptLogin(Scanner scanner) throws Exception{
-        System.out.println("User Sent login request to server.");
+        //System.out.println("User Sent login request to server.");
         Connections.sendRequest(this.socket,"login");
         while (true){
-            System.out.print("Enter your Username: ");
+            System.out.print("Enter your Existing Username: ");
             String username = scanner.nextLine();
                 Connections.sendRequest(this.socket,username);
-                System.out.println("Username Selected is " + username);
                 String answer = Connections.receiveResponse(this.socket);
                 if (answer.equals("username found")){
+                    System.out.println("Username " +username+ " found");
                     this.username = username;
                     break;
                 }
                 System.out.println("Username not found, please try again");
             }
         while (true){
-            System.out.print("Enter your Password: ");
+            System.out.print("Enter your Existing Password: ");
             String password = scanner.nextLine();
             String hashedPassword = hashPassword(password);
             Connections.sendRequest(this.socket,hashedPassword);
             String answer = Connections.receiveResponse(this.socket);
             if (answer.equals("password correct")){
+                System.out.println("Password correct");
                 this.password = hashedPassword;
                 this.loggedIn = true;
                 break;
@@ -339,6 +339,7 @@ public class Client {
                     System.out.println("1. Normal Queue (Player's rank doesn't matter)");
                     System.out.println("2. Ranked Queue (Player's rank matters)");
                     System.out.println("3. Exit");
+                    System.out.print("Enter your choice: ");
                     String choice = scanner.nextLine();
                     if(choice.equals("1")){
                         Connections.sendRequest(this.socket,"NORMAL");
@@ -351,7 +352,7 @@ public class Client {
                     if(choice.equals("3")){
                         System.exit(0);
                     }
-                    System.out.println("Invalid choice");
+                    System.out.println("Invalid choice. Please try again.");
                 }
                 break;
             case "Player Reconnected to queue":
@@ -370,10 +371,10 @@ public class Client {
 
     }
     public void attemptRegister(Scanner scanner) throws Exception{
-        System.out.println("Sent Register request to server");
+        //System.out.println("Sent Register request to server");
         Connections.sendRequest(this.socket,"register");
         while (true){
-            System.out.print("Enter your Username: ");
+            System.out.print("Enter your new Username: ");
             String username = scanner.nextLine();
                 Connections.sendRequest(this.socket,username);
                 String answer = Connections.receiveResponse(this.socket);
@@ -381,16 +382,16 @@ public class Client {
                     this.username = username;
                     break;
                 }
-                System.out.println("Username found, please try again");
+                System.out.println("Username already exists. Please try another Username");
             }
-        System.out.print("Enter your Password: ");
+        System.out.print("Enter your new Password: ");
         String password = scanner.nextLine();
         String hashedPassword = hashPassword(password);
         Connections.sendRequest(this.socket,hashedPassword);
         String answer = Connections.receiveResponse(this.socket);
         if (answer.equals("register successful")){
             this.password = hashedPassword;
-            System.out.println("Register Successful");
+            System.out.println("Successfully registered. Advancing to Game Menu!");
         }
         this.loggedIn = true;
     }
