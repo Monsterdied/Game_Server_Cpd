@@ -14,6 +14,9 @@ public class Player{
         this.curr_bet = curr_bet;
         this.bet_multiplier = bet_multiplier;
     }
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public int getId() {
         return this.id;

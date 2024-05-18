@@ -3,8 +3,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*; 
 public class Queue{
-    private List<Pair<Player, SocketChannel>> rankedQueue;
-    private List<Pair<Player, SocketChannel>> casualQueue;
+    public List<Pair<Player, SocketChannel>> rankedQueue;
+    public List<Pair<Player, SocketChannel>> casualQueue;
     private final int players_per_game;
     private final double Max_Disparity_Money;
     public Queue(int players_per_game , int Max_Disparity_Money) {

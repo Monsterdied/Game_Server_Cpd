@@ -57,7 +57,9 @@ public class Server {
             this.databaseLock.unlock();
             
         }
+        this.databaseLock.lock();
         List<Player> players = database.getPlayersInGame(0);
+        this.databaseLock.unlock();
         for (Player player : players) {
             System.out.println("Player " + player.getName() + " is in the lobby");
         }
@@ -88,6 +90,15 @@ public class Server {
 
         Thread.Builder builder = Thread.ofVirtual();
         Thread t = builder.start(task);
+        while (true){
+            System.out.println("Current Queue Size: " + this.queue.rankedQueue.size() + " " + this.queue.casualQueue.size());
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                System.out.println("Server Error: " + e.getMessage());
+            }
+
+        }
     }
     public void acceptConnections() throws IOException {
             socket = this.serverSocket.accept();
@@ -138,8 +149,8 @@ public class Server {
                         Connections.sendRequest(socket, "Player Reconnected to queue");
                     }
                 } else {
-                    System.out.println("Handle reconnection");
-                    System.out.println("Player " + player.getName() + " is in the lobby");
+                    /*System.out.println("Handle reconnection");
+                    System.out.println("Player " + player.getName() + " is in the lobby");*/
                 }
             }
         } catch (IOException e) {

@@ -174,7 +174,7 @@ public class Client {
             String answer = Connections.receiveResponse(this.socket);
             System.out.println("Server: " + answer);
             System.out.print("Enter your bet: ");
-            playerBet = getChoiceWithTimeout(1000000, 5).intValue();
+            playerBet = getChoiceWithTimeout(1000000, 7).intValue();
             System.out.println("Player Bet: " + playerBet);
             Connections.sendRequest(this.socket,String.valueOf(playerBet));
             System.out.println("Bet Sent Waiting For Multiplier response");
@@ -182,7 +182,7 @@ public class Client {
             if(! answer.startsWith("Selected bet: 0.0")){
                 System.out.println("Server: " + answer);
                 System.out.print("Select multiplier: ");
-                double playerMultiplier = getChoiceWithTimeout(1000000, 5);
+                double playerMultiplier = getChoiceWithTimeout(1000000, 7);
                 System.out.println("Player Multiplier: " + playerMultiplier);
                 Connections.sendRequest(this.socket,String.valueOf(playerMultiplier));
                 answer = Connections.receiveResponse(this.socket);
@@ -235,6 +235,10 @@ public class Client {
                 }else if(response.startsWith("Round Ended")){
                     System.out.println(response);
                     break;// TODO ONLY BREAK IF ROUND ENDED
+                }
+                if(response.endsWith("Crashed!!!")){
+                    System.out.println("crashed");
+                    break;
                 }
             }
             timeSinceStart = Instant.now().getEpochSecond() - startTime;
@@ -373,6 +377,11 @@ public class Client {
     public void attemptRegister(Scanner scanner) throws Exception{
         //System.out.println("Sent Register request to server");
         Connections.sendRequest(this.socket,"register");
+        try{
+            Thread.sleep(1000);
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
         while (true){
             System.out.print("Enter your new Username: ");
             String username = scanner.nextLine();

@@ -104,7 +104,21 @@ public class Database {
             throw new Error("Problem", e);
         }
     }
-    
+    public int getLastPlayerId(){
+        try {
+            checkConnection();
+            Statement stmt = this.conn.createStatement();
+            String q1 = "SELECT MAX(id) AS max_id FROM Player;";
+            ResultSet rs = stmt.executeQuery(q1);
+            if (rs.next()) {
+                return rs.getInt("max_id");
+            } else {
+                return -1;
+            }
+        } catch (SQLException e) {
+            throw new Error("Problem", e);
+        }
+    }
     public boolean createPlayer(Player player,String password) {
         try {
             checkConnection();
@@ -112,6 +126,7 @@ public class Database {
             String q1 = "insert into Player (name, money, current_game, curr_bet, password) values ('" + player.getName() + "', " + player.getMoney() + ", " + player.getCurrentGame() + ", " + player.getCurrBet() + ", '" + password + "')";
             System.out.println(q1);
             stmt.executeUpdate(q1);
+            player.setId(getLastPlayerId());
             return true;
         } catch (SQLException e) {
             throw new Error("Problem", e);
