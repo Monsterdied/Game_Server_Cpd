@@ -11,6 +11,7 @@ CREATE TABLE Player (
 DROP TABLE IF EXISTS Game;
 CREATE TABLE Game (
     id INTEGER PRIMARY KEY,
+    curr_round INTEGER DEFAULT 1,
     running BOOLEAN DEFAULT TRUE
     -- add other fields related to the game if needed
 );

@@ -27,7 +27,7 @@ public class Server {
     private final int MAX_PARALLEL_GAMES = 5;
     private final int MAX_PLAYERS = 4; 
     private final int TIME_INTERVAL = 2;
-    private final Queue queue = new Queue(1, 1000);
+    private final Queue queue = new Queue(2, 1000);
     Database database = new Database();
     private ReentrantLock databaseLock;
     private ReentrantLock queueLock;
@@ -125,14 +125,23 @@ public class Server {
                     System.exit(0);
                     break;
                 default:
-                    Connections.sendRequest(socket, "Invalid choice");
+                    Connections.sendRequest(socket, "Invalid choice 1");
                     break;
             }
             if (player != null){
                 if (player.getCurrentGame() == -1){
                     System.out.println("Handle new queue request");
-                    Connections.sendRequest(socket, "Type of game:");
-                    AddToqueue( player, socket);
+                    this.queueLock.lock();
+                    boolean inQueue = this.queue.CheckIfPlayerInQueueAndUpdate(player, socket);
+                    this.queueLock.unlock();
+                    if (!inQueue){
+                        System.out.println("Player " + player.getName() + " is not in the queue");
+                        Connections.sendRequest(socket, "Type of game:");
+                        AddToqueue( player, socket);
+                    }else{
+                        System.out.println("Player " + player.getName() + " is in the queue");
+                        Connections.sendRequest(socket, "Player Reconnected to queue");
+                    }
                 } else {
                     System.out.println("Handle reconnection");
                     System.out.println("Player " + player.getName() + " is in the lobby");
@@ -168,14 +177,10 @@ public class Server {
             }
             if (players != null){
                 System.out.println("Game is starting with: " + players.size());
-                
-                
-
+                this.queueLock.lock();
                 Game game = new Game(players,database,databaseLock,timeLock);
-
-                database.addGame(game);
-
                 this.threadsGame.execute(game);
+                this.queueLock.unlock();
                 
             }
 
@@ -185,6 +190,9 @@ public class Server {
         Player player = null;
         while (true){
             username = Connections.receiveResponse(socket);
+            if(username.equals("")){
+                return null;
+            }
             this.databaseLock.lock();
             player = this.database.getPlayerByName(username);
             this.databaseLock.unlock();
@@ -200,6 +208,9 @@ public class Server {
             this.databaseLock.lock();
             String passwordHash = this.database.getPlayerPassword(username);
             this.databaseLock.unlock();
+            if(username.equals("")){
+                return null;
+            }
             if (password.equals(passwordHash)){
                 Connections.sendRequest(socket, "password correct");
                 break;

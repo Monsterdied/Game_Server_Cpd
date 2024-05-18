@@ -78,7 +78,21 @@ public class Database {
             throw new Error("Problem", e);
         }
     }
-    
+    public int getLatestGameId(){
+        try {
+            checkConnection();
+            Statement stmt = this.conn.createStatement();
+            String q1 = "SELECT MAX(id) AS max_id FROM Game;";
+            ResultSet rs = stmt.executeQuery(q1);
+            if (rs.next()) {
+                return rs.getInt("max_id");
+            } else {
+                return -1;
+            }
+        } catch (SQLException e) {
+            throw new Error("Problem", e);
+        }
+    }
     public String getPlayerPassword(String name) {
         try {
             checkConnection();
@@ -131,14 +145,24 @@ public class Database {
             throw new Error("Problem", e);
         }
     }
-    
-    public boolean addGame(Game game) {
+    public boolean updateGame(Game game){
+        try {
+            checkConnection();
+            Statement stmt = this.conn.createStatement();
+            String q1 = "update Game set SET curr_round = " + game.curr_round +" where id = " + game.gameID + ";";
+            stmt.executeUpdate(q1);
+            return true;
+        } catch (SQLException e) {
+            throw new Error("Problem", e);
+        }
+    }
+    public int addGame() {
         try {
             checkConnection();
             Statement stmt = this.conn.createStatement();
             String q1 = "insert into Game (running) values (true)";
             stmt.executeUpdate(q1);
-            return true;
+            return getLatestGameId();
         } catch (SQLException e) {
             throw new Error("Problem", e);
         }

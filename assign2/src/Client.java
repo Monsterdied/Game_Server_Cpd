@@ -10,12 +10,18 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.nio.channels.SocketChannel;
 public class Client {
     SocketChannel socket; 
-    static boolean loggedIn = false;
+    static boolean loggedIn;
     private int TimeRetry = 5;
     private String password;
     public String username;
+    private int playerBet;
+    public Client(){
+        this.loggedIn = false;
+        this.username = "";
+        this.password = "";
+    }
     public static void main(String[] args) {
-            Client client = new Client();
+        Client client = new Client();
         
         if (args.length < 2) return;
 
@@ -40,7 +46,8 @@ public class Client {
             this.socket = SocketChannel.open();
             socket.connect(new InetSocketAddress(hostname, port));
             this.TimeRetry = 5;
-            if (!loggedIn){
+            System.out.println("Connected to the server. !!!!!!!!!!! " + this.loggedIn);
+            if (!this.loggedIn){
                 
                 this.welcomeMenu();
             }else{
@@ -58,6 +65,11 @@ public class Client {
     }
     public void reconnection(){
         Connections.sendRequest(this.socket, "login");
+        try{
+            Thread.sleep(1000);
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
         Connections.sendRequest(this.socket, this.username);
         System.out.println(this.username);
         try{
@@ -76,6 +88,7 @@ public class Client {
                 welcomeMenu();
             }        
             System.out.println("Relogin Successful");
+            choose_Queue_Type(new Scanner(System.in));
         }catch(Exception e){
             System.out.println(e.getMessage());
         };
@@ -156,20 +169,21 @@ public class Client {
         return choice;
     }
     public void handleBetAndMultiplierIo(){
+        playerBet = 0;
         try{
             System.out.println("Playing Round");
             String answer = Connections.receiveResponse(this.socket);
             System.out.println("Server: " + answer);
             System.out.print("Enter your bet: ");
-            int playerBet = getChoiceWithTimeout(1000000, 10).intValue();
+            playerBet = getChoiceWithTimeout(1000000, 5).intValue();
             System.out.println("Player Bet: " + playerBet);
             Connections.sendRequest(this.socket,String.valueOf(playerBet));
             System.out.println("Bet Sent Waiting For Multiplier response");
             answer = Connections.receiveResponse(this.socket);
-            if(answer.startsWith("Selected bet: ")){
+            if(! answer.startsWith("Selected bet: 0.0")){
                 System.out.println("Server: " + answer);
                 System.out.print("Select multiplier: ");
-                double playerMultiplier = getChoiceWithTimeout(1000000, 10);
+                double playerMultiplier = getChoiceWithTimeout(1000000, 5);
                 System.out.println("Player Multiplier: " + playerMultiplier);
                 Connections.sendRequest(this.socket,String.valueOf(playerMultiplier));
                 answer = Connections.receiveResponse(this.socket);
@@ -177,6 +191,7 @@ public class Client {
             }else{
                 System.out.println("Server: " + answer);
                 System.out.println("Invalid Bet, please try again Next Round");
+                answer = Connections.receiveResponse(this.socket);
             }
 
         }catch(Exception e){
@@ -205,6 +220,7 @@ public class Client {
         AtomicReference<String> input = new AtomicReference<>("Not Y");
         Thread t = builder.start(() -> readInput(input));
         boolean bailed = false;
+        boolean wonBet = false;
         while (true) {
             String response = Connections.hasResponse(this.socket);
             if (response != null) {
@@ -213,6 +229,7 @@ public class Client {
                     System.out.println("crashed");
                     break;
                 }else if(response.startsWith("Won Bet: ")){
+                    wonBet = true;
                     System.out.println(response);
                 }else if(response.startsWith("Lost Bet,")){
                     System.out.println(response);
@@ -222,13 +239,17 @@ public class Client {
                 }
             }
             timeSinceStart = Instant.now().getEpochSecond() - startTime;
-            double currMultiplier = timeSinceStart*0.2 + 1;
+            double currMultiplier = timeSinceStart*0.2;
             
             // Print status update with backspace to overwrite previous characters
             if(!bailed){
-                System.out.print("\r" +" "+ String.format("%,.2f", currMultiplier) + "Select Y to Bail:");
+                System.out.print("\r" +" "+ String.format("%,.1f", currMultiplier) + "  Select Y to Bail:");
             }else{
-                System.out.print("\r" +" "+ String.format("%,.2f", currMultiplier) + "Bailed");
+                if(wonBet){
+                    System.out.print("\r" +" "+ String.format("%,.1f", currMultiplier) + "  Won Bet");
+                }else{
+                    System.out.print("\r" +" "+ String.format("%,.1f", currMultiplier) + "  Bailed");
+                }
             }
             // Read a single character
             if(input.get().equals("Y") && !bailed){
@@ -251,7 +272,6 @@ public class Client {
             if (!input.isEmpty()) {
             // Update message based on user input (replace with your logic)
                 if (input.equals("Y")) {
-                    System.out.println("You pressed Y");
                     message.set("Y");
                     break;
                 }else {
@@ -273,11 +293,7 @@ public class Client {
                 System.out.println(answerRound);
                 PlayRound();
             }
-
-            while (true){
-
-            }
-            
+            this.reconnection();
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
@@ -338,8 +354,7 @@ public class Client {
                     System.out.println("Invalid choice");
                 }
                 break;
-            case "RANKED Reconnect":
-                //TODO
+            case "Player Reconnected to queue":
                 System.out.println("Reconnecting to Ranked Queue");
                 break;
             case "NORMAL Reconnect":

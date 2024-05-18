@@ -13,6 +13,23 @@ public class Queue{
         this.rankedQueue = new ArrayList<Pair<Player, SocketChannel>>();
         this.casualQueue = new ArrayList<Pair<Player, SocketChannel>>();
     }
+    public boolean CheckIfPlayerInQueueAndUpdate(Player player , SocketChannel socket) {
+        for (int i = 0; i < this.rankedQueue.size(); i++){
+            Pair<Player, SocketChannel> p = this.rankedQueue.get(i);
+            if (p.getKey().getName().equals(player.getName())) {
+                this.rankedQueue.set(i, new Pair<Player, SocketChannel>(player, socket));
+                return true;
+            }
+        }
+        for (int i = 0; i < this.casualQueue.size(); i++){
+            Pair<Player, SocketChannel> p = this.casualQueue.get(i);
+            if (p.getKey().getName().equals(player.getName())) {
+                this.casualQueue.set(i, new Pair<Player, SocketChannel>(player, socket));
+                return true;
+            }
+        }
+        return false;
+    }
     public void sortRankedQueue() {
         Collections.sort(this.rankedQueue , new Comparator<Pair<Player, SocketChannel>>() {
             @Override
@@ -22,14 +39,6 @@ public class Queue{
         });
     }
     public void AddPlayerToRanked(Player player , SocketChannel socket) {
-        for (int i = 0; i < this.rankedQueue.size(); i++){
-            Pair<Player, SocketChannel> p = this.rankedQueue.get(i);
-            if (p.getKey().getName().equals(player.getName())) {
-                rankedQueue.set(i, new Pair<Player, SocketChannel>(player, socket));
-                System.out.println("Player " + player.getName() + " reconnected in ranked queue");
-                return; 
-            }
-        }
         this.rankedQueue.add(new Pair<Player, SocketChannel>(player, socket));
         sortRankedQueue();
     }

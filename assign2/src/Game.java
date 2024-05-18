@@ -15,23 +15,28 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Game implements Runnable{
 
     private ArrayList<Pair<Player,SocketChannel>> players;
-    private Integer gameID;
+    public Integer gameID;
     private Long crashedTime = null;
 
     
     public double multiplier;
     private Random random;
     public int rounds = 3;
+    public int curr_round = 1;
     public String requestString = "";
     private ReentrantLock databaseLock;
     private ReentrantLock timeLock;
     private Database database;
+
     public Game(ArrayList<Pair<Player,SocketChannel>> players, Database database,ReentrantLock databaseLock,ReentrantLock timeLock) {
         this.database = database;
         this.databaseLock = databaseLock;
         this.timeLock = timeLock;
         this.players = players;
         this.random = new Random();
+        this.databaseLock.lock();
+        this.gameID = database.addGame();
+        this.databaseLock.unlock();
     }
 
 
@@ -41,17 +46,19 @@ public class Game implements Runnable{
     
     public void run() {
         try{
-            for(Pair<Player, SocketChannel> pair : players){
-                Player player = pair.getKey();
-                player.setMoney(player.getMoney() + 30);//add 30 to the player money
-                databaseLock.lock();
-                database.updatePlayer(player);
-                databaseLock.unlock();
-            }
+
             System.out.println("Players: ");
 
             for (Pair<Player, SocketChannel> pair : players) {
                 Player player = pair.getKey();
+                // add money to the player
+                player.setMoney(player.getMoney() + 30);//add 30 to the player money
+                player.setCurrentGame(this.gameID);
+                databaseLock.lock();
+                System.out.println("Name: " + player.getName() + ", Money: " + player.getMoney() + ", Bet: " + player.getCurrBet() + ", Bet: " + player.getBetMultiplier());
+                database.updatePlayer(player);
+                databaseLock.unlock();
+                // print players information
                 System.out.println("Name: " + player.getName() + ", Money: " + player.getMoney() + ", Bet: " + player.getCurrBet() + ", Bet: " + player.getBetMultiplier());
                 this.requestString += "Name: " + player.getName() + ", Money: " + player.getMoney() + ", Bet: " + player.getCurrBet() + ", Bet: " + player.getBetMultiplier();
                 this.requestString += "\n";
@@ -62,13 +69,21 @@ public class Game implements Runnable{
 
 
         
-            for (int i = 1; i <= rounds; i++) {
+            for (;curr_round <= rounds; curr_round++) {
                 this.requestString = "";
-                System.out.println("Round " + i);
-                this.requestString += "Round " + i;
+                System.out.println("Round " + curr_round);
+                this.requestString += "Round " + curr_round;
                 AllPlayersRequest(this.requestString + "/" + this.rounds);
-                playRound();   
+                playRound();
+                   
                 Thread.sleep(500);
+            }
+            for (Pair<Player, SocketChannel> pair : players) {
+                Player player = pair.getKey();
+                player.setCurrentGame(-1);
+                databaseLock.lock();
+                database.updatePlayer(player);
+                databaseLock.unlock();
             }
 
         } catch (Exception e) {
@@ -130,11 +145,12 @@ public class Game implements Runnable{
         this.crashedTime = Instant.now().getEpochSecond() + (long)(multiplier * 5);//0.5 seconds per 0.1 multiplier
         long currentTime = Instant.now().getEpochSecond();
         timeLock.unlock();
+
         AllPlayersRequest(""+currentTime);
         long startTime = currentTime;
         boolean crashed = false;
         while(currentTime < this.crashedTime + 2){//add 2 seconds to the time to make sure request with delay are processed
-            System.out.println("Current Time: " +  String.format("%.1f", (currentTime - startTime)*0.2 + 1) + " Crashed Time: " + this.crashedTime);
+            System.out.println("Current Time: " +  String.format("%.1f", (currentTime - startTime)*0.2) + " Crashed Time: " + this.crashedTime);
             HandlePlayerUpdateOfBets(multiplier);
             if(currentTime >= this.crashedTime && !crashed){
                 crashed = true;
@@ -248,11 +264,11 @@ public class Game implements Runnable{
                 String response = responses.get(j);
                 Player player = players.get(j).getKey();
                 if(response == null){
-                    player.setBetMultiplier(0.0);
+                    player.setBetMultiplier(1.0);
                 }else{
                     Double multiplier = Double.parseDouble(response);
                     if(multiplier < 0.0){
-                        player.setBetMultiplier(0.0);
+                        player.setBetMultiplier(1.0);
                     }
                     else{
                         player.setBetMultiplier(multiplier);
