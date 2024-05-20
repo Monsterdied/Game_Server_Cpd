@@ -19,7 +19,6 @@ public class Server {
     private ServerSocketChannel serverSocket;
     private final ExecutorService threadsGame;
     private final ExecutorService threadsPlayers;
-    private SocketChannel socket;
     //Constants
 
     private final int TIMEOUT = 100000;
@@ -93,7 +92,7 @@ public class Server {
         while (true){
             System.out.println("Current Queue Size: " + this.queue.rankedQueue.size() + " " + this.queue.casualQueue.size());
             try {
-                Thread.sleep(2000);
+                Thread.sleep(6000);
             } catch (InterruptedException e) {
                 System.out.println("Server Error: " + e.getMessage());
             }
@@ -101,10 +100,10 @@ public class Server {
         }
     }
     public void acceptConnections() throws IOException {
-            socket = this.serverSocket.accept();
+            SocketChannel socket = this.serverSocket.accept();
             Runnable client = () -> {
                 try {
-                    handleClient();
+                    handleClient(socket);
                 } catch (IOException e) {
                     System.out.println("Server Error: " + e.getMessage());
                 }
@@ -113,19 +112,22 @@ public class Server {
             System.out.println("Connection accepted");
 
     }
-    public void handleClient() throws IOException {
+    public void handleClient(SocketChannel socket) throws IOException {
         try {
             Player player = null;
             System.out.println("\nNew Connection Received, Handling client...");
             socket.socket().setSoTimeout(this.TIMEOUT);
-            System.out.println("Waiting for the Client Choice: ");
             String choice = Connections.receiveResponse(socket);
             System.out.println("Received Choice from the Client. The selected Choice was: " + choice + "!\n");
             switch (choice) {
                 case "login":
+                    System.out.println("Client chose to login!\n");
+                    Connections.sendRequest(socket, "Login");
+                    System.out.println("Ateempting loging!\n");
                     player = attemptLogin(socket);
                     break;
                 case "register":
+                    Connections.sendRequest(socket, "Register");
                     player = attemptRegister(socket);
                     break;
                 case "exit":
@@ -136,22 +138,27 @@ public class Server {
                     break;
             }
             if (player != null){
-                if (player.getCurrentGame() == -1){
-                    System.out.println("\nPlayer "+ player.getName()  +" is choosing the type of queue!");
-                    this.queueLock.lock();
-                    boolean inQueue = this.queue.CheckIfPlayerInQueueAndUpdate(player, socket);
-                    this.queueLock.unlock();
-                    if (!inQueue){
-                        Connections.sendRequest(socket, "Type of game:");
-                        AddToqueue( player, socket);
-                    }else{
-                        System.out.println("Player " + player.getName() + " is already in the queue");
-                        Connections.sendRequest(socket, "Player Reconnected to queue");
-                    }
-                } else {
-                    /*System.out.println("Handle reconnection");
-                    System.out.println("Player " + player.getName() + " is in the lobby");*/
+                //if (player.getCurrentGame() == -1){
+                System.out.println("\nPlayer "+ player.getName()  +" is choosing the type of queue!");
+                this.queueLock.lock();
+                boolean inQueue = this.queue.CheckIfPlayerInQueueAndUpdate(player, socket);
+                this.queueLock.unlock();
+                if (!inQueue){
+                    Connections.sendRequest(socket, "Type of game:");
+                    AddToqueue( player, socket);                  
+                }else{
+                    System.out.println("Player " + player.getName() + " is already in the queue");
+                    Connections.sendRequest(socket, "Player Reconnected to queue");
                 }
+                /*} else {
+                    System.out.println("Player " + player.getName() + " is in the game");
+                    databaseLock.lock();
+                    player.setCurrentGame(-1);
+                    database.updatePlayer(player);
+                    databaseLock.unlock();
+                    //System.out.println("Handle reconnection");
+                    //System.out.println("Player " + player.getName() + " is in the lobby");
+                }*/
             }
         } catch (IOException e) {
             System.out.println("Server Error: " + e.getMessage());
@@ -163,9 +170,10 @@ public class Server {
             System.out.println("\nThe Player " + player.getName() + " choose the " + reading + " queue!");
             switch (reading){
                 case "RANKED":
+                    System.out.println("\nAdding Player " + player.getName() + " to ranked queue!");
                     this.queueLock.lock();
-                    queue.AddPlayerToRanked(player, socket);
-                    players =  queue.getRankedGamePlayers();
+                    this.queue.AddPlayerToRanked(player, socket);
+                    players =  this.queue.getRankedGamePlayers();
                     this.queueLock.unlock();
                     break;
                 case "NORMAL":
@@ -196,8 +204,10 @@ public class Server {
         String username = "";
         Player player = null;
         while (true){
+            System.out.println("Waiting for the Client's Username: ");
             username = Connections.receiveResponse(socket);
-            if(username.equals("")){
+            if(username.equals("") || username == null){
+                System.out.println("Client's Username was empty!\n");
                 return null;
             }
             this.databaseLock.lock();
@@ -212,12 +222,12 @@ public class Server {
         }
         while (true){
             String password = Connections.receiveResponse(socket);
+            if(password.equals("") || password == null){
+                return null;
+            }
             this.databaseLock.lock();
             String passwordHash = this.database.getPlayerPassword(username);
             this.databaseLock.unlock();
-            if(username.equals("")){
-                return null;
-            }
             if (password.equals(passwordHash)){
                 System.out.println("Client's Password was correct!\n");
                 Connections.sendRequest(socket, "password correct");
@@ -232,6 +242,9 @@ public class Server {
         Player player = null;
         while (true){
             username = Connections.receiveResponse(socket);
+            if(username.equals("") || username == null){
+                return null;
+            }
             this.databaseLock.lock();
             player = this.database.getPlayerByName(username);
             this.databaseLock.unlock();

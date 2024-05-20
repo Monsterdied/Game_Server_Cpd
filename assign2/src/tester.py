@@ -3,38 +3,51 @@ import pexpect
 import threading
 import random
 import time
+import sys
 players = []
 def Client(d, game_mode):
     c = pexpect.spawn("java -cp '.:src' Client localhost 8000")
 
     c.expect('3. Exit', timeout=120)
-    print('And now for something completely different...')
+    print("username")
     c.sendline('1')
-    c.expect('Enter your Username: ', timeout=120)
-    time.sleep(2)
+    c.expect('Enter your Existing Username: ', timeout=30)
+    #c.sendline('2')
+    #c.expect('Enter your new Username: ', timeout=2)
     print("player"+str(d))
     c.sendline("player"+str(d))
-    c.expect('Enter your Password: ', timeout=120)
+    c.expect('Enter your Existing Password: ', timeout=30)
+    #c.expect('Enter your new Password: ', timeout=2)
     print("password"+str(d))
-    time.sleep(2)
     c.sendline("password"+str(d))
-    c.expect('Login Successful', timeout=120)
+    print("ok1")
+    c.expect('Login Successful', timeout=60)
     print("ok")
-    c.expect(b'Type of game:\r\nChoose the type of queue you want to join\r\n1. Normal Queue\r\n2. Ranked Queue\r\n3. Exit', timeout=120)
+    c.expect(b"\n3. Exit\r\nEnter your choice: ", timeout=1)
+    print("game_mode")
     c.sendline(str(game_mode))
-    c.expect('Waiting for game to start')
-    print((c.before))
-    print(c.after, end=' ')
+    print("game started")
+    for i in range(1, 4):
+        print("round "+str(i))
+        c.expect('Enter your bet: ', timeout=120)
+        print("send bet")
+        c.sendline("10")
+        c.expect('Select multiplier: ', timeout=120)
+        print("send multiplier")
+        c.sendline("2")
+    c.expect('Game Ended', timeout=120)
+    print("game ended")
     players.append(c)
     #c.kill(1)
     print('is alive:', c.isalive())
+#Client(sys.argv[1], 1)
 # Execute functions in parallel (limited by GIL)
 def multiTreading(start,users):
     threads = []
     for i in range(start,users):
         d = i + 1  # Numbers from 1 to 30
-        game_mode = random.randint(1,2)  # Replace with actual game mode values
-        thread = threading.Thread(target=Client, args=(d, game_mode))
+        #game_mode = random.randint(1,2)  # Replace with actual game mode values
+        thread = threading.Thread(target=Client, args=(d, int(sys.argv[2])))
         threads.append(thread)
         thread.start()
         #time.sleep(0.5)
@@ -43,7 +56,12 @@ def multiTreading(start,users):
     for thread in threads:
         thread.join()
     print("All clients finished!")
-multiTreading(0,4)
+print('Running')
+if(sys.argv[2] != '1' and sys.argv[2] != '2'):
+    print("Invalid game mode 1 casual or 2 ranked")
+if(int(sys.argv[1]) <= 0):
+    print("Invalid number of clients")
+multiTreading(0,int(sys.argv[1]))
 
 
 

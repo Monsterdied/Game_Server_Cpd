@@ -55,7 +55,7 @@ public class Game implements Runnable{
                 player.setMoney(player.getMoney() + 30);//add 30 to the player money
                 player.setCurrentGame(this.gameID);
                 databaseLock.lock();
-                System.out.println("Name: " + player.getName() + ", Money: " + player.getMoney() + ", Bet: " + player.getCurrBet() + ", Bet: " + player.getBetMultiplier());
+                System.out.println("Name: " + player.getName() + ", Money: " + player.getMoney() + ", Bet: " + String.format("%.1f",player.getCurrBet()) + ", Bet: " + String.format("%.1f",player.getBetMultiplier()));
                 database.updatePlayer(player);
                 databaseLock.unlock();
                 // print players information
@@ -71,8 +71,6 @@ public class Game implements Runnable{
             for (;curr_round <= rounds; curr_round++) {
                 this.requestString = "";
                 System.out.println("Round " + curr_round);
-                this.requestString += "Round " + curr_round;
-                AllPlayersRequest(this.requestString + "/" + this.rounds);
                 playRound();
                    
                 Thread.sleep(500);
@@ -84,7 +82,7 @@ public class Game implements Runnable{
                 database.updatePlayer(player);
                 databaseLock.unlock();
             }
-
+            System.out.println("Game finished:" + this.gameID);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -230,8 +228,7 @@ public class Game implements Runnable{
     }
     private void askPlayersInfo(){
         try{
-            AllPlayersRequest("bet Ammount");
-            Thread.sleep(10000);//wait 10 secs for the responses
+            Thread.sleep(12000);//wait 10 secs for the responses
             ArrayList<String> responses = CheckAllPlayersResponses();
             for(int j = 0 ; j < responses.size() ; j++){
                 String response = responses.get(j);
@@ -264,7 +261,12 @@ public class Game implements Runnable{
                 if(response == null){
                     player.setBetMultiplier(1.0);
                 }else{
-                    Double multiplier = Double.parseDouble(response);
+                    Double multiplier = 1.0;
+                    try{
+                        multiplier = Double.parseDouble(response);
+                    }catch(Exception e){
+                        e.printStackTrace();
+                    }
                     if(multiplier < 0.0){
                         player.setBetMultiplier(1.0);
                     }

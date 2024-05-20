@@ -15,10 +15,12 @@ public class Client {
     private String password;
     public String username;
     private int playerBet;
+    private boolean playAgain;
     public Client(){
         this.loggedIn = false;
         this.username = "";
         this.password = "";
+        this.playAgain = false;
     }
     public static void main(String[] args) {
         Client client = new Client();
@@ -29,7 +31,13 @@ public class Client {
         int port = Integer.parseInt(args[1]);
         while (true){
             client.connect(hostname, port);
-            System.out.println("Connection Lost, retrying in "+ client.TimeRetry + " seconds");
+            if(! client.playAgain){
+                System.out.println("Connection Lost, retrying in "+ client.TimeRetry + " seconds");
+            }else{
+                client.playAgain = false;
+                continue;
+            }
+
             try {
                 Thread.sleep(client.TimeRetry * 1000);
             } catch (InterruptedException e) {
@@ -64,11 +72,7 @@ public class Client {
     }
     public void reconnection(){
         Connections.sendRequest(this.socket, "login");
-        try{
-            Thread.sleep(1000);
-        }catch(Exception e){
-            System.out.println(e.getMessage());
-        }
+        String response = Connections.receiveResponse(this.socket); // wait for server to receive login request and reply
         Connections.sendRequest(this.socket, this.username);
         System.out.println(this.username);
         try{
@@ -167,40 +171,41 @@ public class Client {
         g.cancel(true);
         return choice;
     }
-    public void handleBetAndMultiplierIo(){
+    public String handleBetAndMultiplierIo(){
+        String result = "didn't Bet";
         playerBet = 0;
         try{
             System.out.println("Playing Round");
-            String answer = Connections.receiveResponse(this.socket);
-            System.out.println("Server: " + answer);
+            //System.out.println("Server: " + answer);
             System.out.print("Enter your bet: ");
             playerBet = getChoiceWithTimeout(1000000, 7).intValue();
             System.out.println("Player Bet: " + playerBet);
             Connections.sendRequest(this.socket,String.valueOf(playerBet));
             System.out.println("Bet Sent Waiting For Multiplier response");
-            answer = Connections.receiveResponse(this.socket);
+            String answer = Connections.receiveResponse(this.socket);
             if(! answer.startsWith("Selected bet: 0.0")){
-                System.out.println("Server: " + answer);
+                //System.out.println("Server: " + answer);
                 System.out.print("Select multiplier: ");
                 double playerMultiplier = getChoiceWithTimeout(1000000, 7);
                 System.out.println("Player Multiplier: " + playerMultiplier);
                 Connections.sendRequest(this.socket,String.valueOf(playerMultiplier));
                 answer = Connections.receiveResponse(this.socket);
-                System.out.println("Server: " + answer);
+                //System.out.println("Server: " + answer);
+                result = "Bet and Multiplier Selected";
             }else{
                 System.out.println("Server: " + answer);
                 System.out.println("Invalid Bet, please try again Next Round");
                 answer = Connections.receiveResponse(this.socket);
             }
-
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
+        return result;
     }
     public void PlayRound(){
-        handleBetAndMultiplierIo();
+        String status = handleBetAndMultiplierIo();
         System.out.println("Round is begining Client Status");
-        HandleMidRound();
+        HandleMidRound(status);
         HandleEndRound();
 
     }
@@ -209,7 +214,7 @@ public class Client {
         System.out.println(answer);
         }
 
-    public void HandleMidRound() {
+    public void HandleMidRound(String status) {
         String startString = Connections.receiveResponse(this.socket);
         System.out.println(startString);
         long startTime =Long.parseLong(startString);
@@ -217,7 +222,12 @@ public class Client {
         System.out.println("Time since start: " + timeSinceStart);
         Thread.Builder builder = Thread.ofVirtual();
         AtomicReference<String> input = new AtomicReference<>("Not Y");
-        Thread t = builder.start(() -> readInput(input));
+        AtomicReference<Boolean> exit = new AtomicReference<>(false);
+        Thread t = builder.start(() -> readInput(input,exit));
+        if(! status.equals("Bet and Multiplier Selected")){
+            System.out.println("Didn't Bet");
+            exit.set(true);
+        }
         boolean bailed = false;
         boolean wonBet = false;
         while (true) {
@@ -245,14 +255,18 @@ public class Client {
             double currMultiplier = timeSinceStart*0.2;
             
             // Print status update with backspace to overwrite previous characters
-            if(!bailed){
-                System.out.print("\r" +" "+ String.format("%,.1f", currMultiplier) + "  Select Y to Bail:");
-            }else{
-                if(wonBet){
-                    System.out.print("\r" +" "+ String.format("%,.1f", currMultiplier) + "  Won Bet");
+            if(status.equals("Bet and Multiplier Selected")){
+                if(!bailed){
+                    System.out.print("\r" +" "+ String.format("%,.1f", currMultiplier) + "  Select Y to Bail:");
                 }else{
-                    System.out.print("\r" +" "+ String.format("%,.1f", currMultiplier) + "  Bailed");
+                    if(wonBet){
+                        System.out.print("\r" +" "+ String.format("%,.1f", currMultiplier) + "  Won Bet");
+                    }else{
+                        System.out.print("\r" +" "+ String.format("%,.1f", currMultiplier) + "  Bailed");
+                    }
                 }
+            }else{
+                System.out.print("\r" +"Didnt bet : "+ String.format("%,.1f", currMultiplier));
             }
             // Read a single character
             if(input.get().equals("Y") && !bailed){
@@ -265,14 +279,34 @@ public class Client {
                 e.printStackTrace();
             }
         }
-        t.interrupt();
+        exit.set(true);
+
+
         System.out.println(); // Print newline after finishing
     }
-    private static void readInput(AtomicReference<String> message) {
-        Scanner scanner = new Scanner(System.in);
+    private static void readInput(AtomicReference<String> message,AtomicReference<Boolean> exit) {
         while (true) {
-            String input = scanner.nextLine();
-            if (!input.isEmpty()) {
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            String input;
+            do {
+                try {
+                    // wait until we have data to complete a readLine()
+                    while (!br.ready()  /*  ADD SHUTDOWN CHECK HERE */) {
+                        Thread.sleep(200);
+                    }
+                    if(exit.get()){
+                        return;
+                    }
+                    input = br.readLine();
+                } catch (Exception e) {
+                    System.out.println("ConsoleInputReadTask() cancelled");
+                    return;
+                }
+            } while ("".equals(input) && !exit.get());
+            if(exit.get()){
+                break;
+            }
+            if (!input.isEmpty() ) {
             // Update message based on user input (replace with your logic)
                 if (input.equals("Y")) {
                     message.set("Y");
@@ -282,6 +316,7 @@ public class Client {
                 }
             }
         }
+        System.out.println("Exiting ConsoleInputReadTask");
     }
     public void PlayingGame(){
         try{
@@ -292,11 +327,12 @@ public class Client {
 
             int rounds = 3;
             for(int i = 1; i <= rounds; i++){
-                String answerRound = Connections.receiveResponse(this.socket);
-                System.out.println(answerRound);
+                System.out.println("Round " + i);
                 PlayRound();
             }
-            this.reconnection();
+            System.out.println("Game Ended");
+            this.playAgain = true;
+            Thread.sleep(5000);
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
@@ -305,6 +341,9 @@ public class Client {
     public void attemptLogin(Scanner scanner) throws Exception{
         //System.out.println("User Sent login request to server.");
         Connections.sendRequest(this.socket,"login");
+        System.out.println("Sent login request to server");
+        String response = Connections.receiveResponse(this.socket); // wait for server to receive the request and reply
+        System.out.println(response);
         while (true){
             System.out.print("Enter your Existing Username: ");
             String username = scanner.nextLine();
@@ -377,11 +416,7 @@ public class Client {
     public void attemptRegister(Scanner scanner) throws Exception{
         //System.out.println("Sent Register request to server");
         Connections.sendRequest(this.socket,"register");
-        try{
-            Thread.sleep(1000);
-        }catch(Exception e){
-            System.out.println(e.getMessage());
-        }
+        String response = Connections.receiveResponse(this.socket); // wait for server to receive the request and reply
         while (true){
             System.out.print("Enter your new Username: ");
             String username = scanner.nextLine();
