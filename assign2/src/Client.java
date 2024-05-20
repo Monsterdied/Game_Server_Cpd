@@ -366,6 +366,7 @@ public class Client {
                 System.out.println("Password correct");
                 this.password = hashedPassword;
                 this.loggedIn = true;
+                Connections.sendRequest(this.socket,"Ack");
                 break;
             }
             System.out.println("Wrong Password. Please retry.");
@@ -436,6 +437,7 @@ public class Client {
         if (answer.equals("register successful")){
             this.password = hashedPassword;
             System.out.println("Successfully registered. Advancing to Game Menu!");
+            Connections.sendRequest(this.socket,"Ack");
         }
         this.loggedIn = true;
     }

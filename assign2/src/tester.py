@@ -50,7 +50,7 @@ def multiTreading(start,users):
         thread = threading.Thread(target=Client, args=(d, int(sys.argv[2])))
         threads.append(thread)
         thread.start()
-        #time.sleep(0.5)
+        time.sleep(0.5)
 
     # Wait for all threads to finish (optional)
     for thread in threads:
