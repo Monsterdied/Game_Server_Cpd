@@ -235,6 +235,7 @@ public class Server {
             }
             Connections.sendRequest(socket, "password incorrect");
         }
+        String answer = Connections.receiveResponse(socket);//Ack login
         return player;
     }
     Player attemptRegister(SocketChannel socket) throws IOException {
@@ -262,6 +263,7 @@ public class Server {
         this.database.createPlayer(player, password);
         this.databaseLock.unlock();
         Connections.sendRequest(socket, "register successful");
+        String answer = Connections.receiveResponse(socket);//Ack register
         return player;
     }
     public static void main(String[] args) {
